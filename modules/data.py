@@ -1,0 +1,80 @@
+import os
+import json
+import torch
+from torch.utils.data import Dataset
+import torch.nn.functional as F
+import numpy as np
+import librosa
+import torch.nn as nn
+import warnings
+
+from util import load_index, qtile_normalize
+from peak_extractor import Analyzer
+
+class FPaintDataset(Dataset):
+    def __init__(self, cfg, path, transform=None, train=False):
+        self.path = path
+        self.transform = transform
+        self.train = train
+        self.cfg = cfg
+        self.norm = cfg['norm']
+        self.sample_rate = cfg['fs']
+        self.dur = cfg['dur']
+        self.n_fft = cfg['n_fft']
+        self.hop_len = cfg['hop_len']
+        self.win_len = cfg['win_len']
+        self.n_frames = cfg['n_frames']
+        self.size = cfg['train_sz'] if train else cfg['val_sz']
+        self.filenames = load_index(path, max_len=self.size)
+        print(f"Loaded {len(self.filenames)} files from {path}")
+        self.ignore_idx = []
+
+    def __getitem__(self, idx):
+        if idx in self.ignore_idx:
+            return self.__getitem__(np.random.randint(0, len(self)))
+        
+        datapath = self.filenames[str(idx)]
+        try:
+            audio, sr = librosa.load(datapath, sr=self.sample_rate, mono=True)
+            if self.norm:
+                audio = qtile_normalize(audio, self.norm)
+        except Exception as e:
+            warnings.warn(f"Error loading {datapath}: {e}")
+            self.ignore_idx.append(idx)
+            return self.__getitem__(np.random.randint(0, len(self)))
+        
+        clip_frames = int(self.dur * self.sample_rate)
+
+        if self.train:
+            start = np.random.randint(0, len(audio) - clip_frames)
+            audio = audio[start:start+clip_frames]
+
+        spec = np.abs(librosa.stft(audio, 
+                                    sr=self.sample_rate, 
+                                    n_fft=self.n_fft, 
+                                    win_length=self.win_len,
+                                    hop_length=self.hop_len))
+
+        # Get rid of extra bin
+        spec = spec[:-1, :]
+        # Pad to n_frames
+        if spec.shape[1] < self.n_frames:
+            pad = np.zeros((spec.shape[0], self.n_frames - spec.shape[1]))
+            spec = np.concatenate([spec, pad], axis=1)
+        elif spec.shape[1] > self.n_frames:
+            spec = spec[:, :self.n_frames]
+
+        # Peak-picking
+        analyzer = Analyzer(cfg=self.cfg)
+        peaks, _ = analyzer.find_peaks(sgram=spec, backward=True)
+
+        if self.transform is not None:
+            spec = self.transform(spec)
+            
+        target = torch.from_numpy(librosa.amplitude_to_db(spec)).unsqueeze(0)
+
+        return torch.from_numpy(peaks).unsqueeze(0), target
+    
+
+    def __len__(self):
+        return len(self.filenames)
