@@ -97,7 +97,7 @@ def save_generated_samples(cfg, generator, val_loader, epoch, save_path='generat
     # Reconstruct audio from spectrograms using Griffin-Lim algorithm
     reconstructed_audios = []
     for fake_spec in fake_specs:
-        fake_spec = fake_spec.squeeze().detach().numpy()
+        fake_spec = fake_spec.squeeze().detach().cpu().numpy()
         fake_audio = librosa.griffinlim(fake_spec, hop_length=cfg['hop_len'], win_length=cfg['win_len'])
         reconstructed_audios.append(fake_audio)
 
