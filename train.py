@@ -106,7 +106,7 @@ def save_generated_samples(cfg, generator, val_loader, epoch, save_path='data/ge
 
     # Save generated audio files
     for i, audio in enumerate(reconstructed_audios):
-        audio_path = f'{save_path}/generated_audio_epoch_{epoch}_sample_{path}.wav'
+        audio_path = f'{save_path}/generated_audio_epoch_{epoch}_sample_{path[0]}.wav'
         sf.write(audio_path, audio, cfg['fs'])
 
     generator.train()  # Set the generator back to training mode
