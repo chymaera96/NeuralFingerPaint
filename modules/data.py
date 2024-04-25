@@ -9,7 +9,7 @@ import torch.nn as nn
 import warnings
 
 from util import load_index, qtile_normalize
-from peak_extractor import Analyzer
+from modules.peak_extractor import Analyzer
 
 class FPaintDataset(Dataset):
     def __init__(self, cfg, path, transform=None, train=False):
