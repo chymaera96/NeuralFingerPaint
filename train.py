@@ -83,7 +83,7 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
     return dis_loss_epoch, gen_loss_epoch
 
 
-def save_generated_samples(cfg, generator, val_loader, epoch, save_path='generated_samples/'):
+def save_generated_samples(cfg, generator, val_loader, epoch, save_path='generated_samples'):
     generator.eval()  # Set the generator to evaluation mode
 
     # Load samples from val_loader
