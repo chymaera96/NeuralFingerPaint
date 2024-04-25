@@ -151,7 +151,7 @@ class Analyzer(object):
             sthresh = a_dec * sthresh
         return peaks
 
-    def find_peaks(self, d=None, sr=None, sgram=None, backward=False):
+    def find_peaks(self, d=None, sr=None, sgram=None, backward=False, list=False):
         """ Find the local peaks in the spectrogram as basis for fingerprints.
             Returns a list of (time_frame, freq_bin) pairs.
 
@@ -219,9 +219,10 @@ class Analyzer(object):
         # build a list of peaks we ended up with
         scols = np.shape(sgram)[1]
         pklist = []
-        for col in range(scols):
-            for bin_ in np.nonzero(peaks[:, col])[0]:
-                amp = logmelspec[bin_, col]
-                pklist.append([col/sgram.shape[1], bin_/sgram.shape[0], amp])
+        if list:
+            for col in range(scols):
+                for bin_ in np.nonzero(peaks[:, col])[0]:
+                    amp = logmelspec[bin_, col]
+                    pklist.append([col/sgram.shape[1], bin_/sgram.shape[0], amp])
                 
         return peaks, np.array(pklist)
