@@ -111,7 +111,7 @@ def count_parameters(model, encoder):
         f.write(str(table))
     return total_params
 
-def compute_gradient_penalty(discriminator, real_data, generated_data):
+def compute_gradient_penalty(discriminator, input, real_data, generated_data):
     batch_size = real_data.size(0)
     device = real_data.device
     
@@ -123,7 +123,7 @@ def compute_gradient_penalty(discriminator, real_data, generated_data):
     interpolated_data.requires_grad_(True)  # Ensure requires_grad is set to True
 
     # Compute discriminator scores for interpolated data
-    mixed_scores = discriminator(interpolated_data, None)
+    mixed_scores = discriminator(input, interpolated_data)
 
     # Compute gradients of the scores with respect to the interpolated data
     gradients = torch.autograd.grad(outputs=mixed_scores, inputs=interpolated_data,
