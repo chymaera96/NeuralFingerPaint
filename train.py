@@ -153,13 +153,11 @@ def main():
     if args.resume:
         if os.path.isfile(args.resume):
             print("=> loading checkpoint '{}'".format(args.resume))
-            generator, 
-            discriminator, 
-            gen_optimizer, 
-            dis_optimizer, 
-            start_epoch, 
-            gen_loss_log, 
-            dis_loss_log = load_ckp(args.resume,  generator, discriminator, gen_optimizer, dis_optimizer)
+            generator, discriminator, gen_optimizer, dis_optimizer, start_epoch, gen_loss_log, dis_loss_log = load_ckp(args.resume, 
+                                                                                                                       generator, 
+                                                                                                                       discriminator, 
+                                                                                                                       gen_optimizer, 
+                                                                                                                       dis_optimizer)
         else:
             print("=> no checkpoint found at '{}'".format(args.resume))
             
