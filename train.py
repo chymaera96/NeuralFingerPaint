@@ -62,6 +62,8 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
         dis_fake_output = discriminator(input, fake_spec.detach())
 
         dis_loss = hinge_loss_dis(dis_real_output, dis_fake_output)
+        gradient_penalty = compute_gradient_penalty(discriminator, target, fake_spec)
+        dis_loss += cfg['lambda'] * gradient_penalty
         dis_loss.backward()
         dis_optimizer.step()
 
