@@ -7,6 +7,7 @@ import numpy as np
 import librosa
 import torch.nn as nn
 import warnings
+warnings.filterwarnings("ignore")
 
 from util import load_index, qtile_normalize
 from modules.peak_extractor import Analyzer
@@ -48,8 +49,13 @@ class FPaintDataset(Dataset):
         clip_frames = int(self.dur * self.sample_rate)
 
         if self.train:
-            start = np.random.randint(0, len(audio) - clip_frames)
-            audio = audio[start:start+clip_frames]
+            try:
+                start = np.random.randint(0, len(audio) - clip_frames)
+                audio = audio[start:start+clip_frames]
+            except:
+                print(f"Audio length is {len(audio)/self.sample_rate} seconds. Skipping {datapath}")
+                self.ignore_idx.append(idx)
+                return self[idx+1]
 
         spec = np.abs(librosa.stft(audio, 
                                     n_fft=self.n_fft, 
