@@ -12,7 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 from util import *
 from modules.loss import hinge_loss_dis, hinge_loss_gen  
 from modules.data import FPaintDataset
-from pix2pixGAN import Generator, Discriminator
+from src.pix2pixGAN import Generator, Discriminator
 
 # Directories
 root = os.path.dirname(__file__)
