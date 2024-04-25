@@ -23,7 +23,7 @@ device = torch.device("cuda")
 
 
 parser = argparse.ArgumentParser(description='Neural Fingerpaint Training')
-parser.add_argument('--config', default=None, type=str,
+parser.add_argument('--config', default='config/default.yaml', type=str,
                     help='Path to config file')
 parser.add_argument('--train_dir', default=None, type=str, metavar='PATH',
                     help='path to training data')
