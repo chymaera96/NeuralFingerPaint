@@ -72,9 +72,9 @@ class FPaintDataset(Dataset):
         if self.transform is not None:
             spec = self.transform(spec)
             
-        target = torch.from_numpy(librosa.amplitude_to_db(spec)).unsqueeze(0)
-
-        return torch.from_numpy(peaks).unsqueeze(0), target
+        target = torch.from_numpy(librosa.amplitude_to_db(spec)).unsqueeze(0).float()
+        peaks = torch.from_numpy(peaks).unsqueeze(0).float()
+        return peaks, target
     
 
     def __len__(self):
