@@ -25,8 +25,10 @@ class FPaintDataset(Dataset):
         self.win_len = cfg['win_len']
         self.n_frames = cfg['n_frames']
         self.size = cfg['train_sz'] if train else cfg['val_sz']
-        self.filenames = load_index(path, max_len=self.size)
-        print(f"Loaded {len(self.filenames)} files from {path}")
+        if train:
+            self.filenames = load_index(cfg, path, mode="train")
+        else:
+            self.filenames = load_index(cfg, path, mode="valid")
         self.ignore_idx = []
 
     def __getitem__(self, idx):
@@ -66,7 +68,7 @@ class FPaintDataset(Dataset):
 
         # Peak-picking
         analyzer = Analyzer(cfg=self.cfg)
-        peaks, _ = analyzer.find_peaks(sgram=spec, backward=True)
+        peaks, _ = analyzer.find_peaks(sgram=spec, backward=False)
 
         if self.transform is not None:
             spec = self.transform(spec)

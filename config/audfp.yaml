@@ -1,0 +1,10 @@
+# Below are the default configs from the audfprint work
+
+fs : 16000
+oversamp: 1
+n_fft : 512
+hop_len : 128
+hpf_pole: 0.98  # spectrogram enhancement
+density: 50.0
+f_sd : 30.0   # how wide to spreak peaks
+maxpksperframe: 6   # maximum number of peaks per frame

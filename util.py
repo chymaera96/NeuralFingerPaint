@@ -8,8 +8,7 @@ import shutil
 import yaml
 from prettytable import PrettyTable
 
-def load_index(data_dir, ext=['wav','mp3'], max_len=8000, inplace=False):
-    dataset = {}
+def load_index(cfg, data_dir, ext=['wav','mp3'], mode="train"):
 
     if data_dir.endswith('.json'):
         print(f"=>Loading indices from index file {data_dir}")
@@ -18,28 +17,52 @@ def load_index(data_dir, ext=['wav','mp3'], max_len=8000, inplace=False):
         return dataset
     
     print(f"=>Loading indices from {data_dir}")
-    if inplace:
-        json_path = os.path.join(data_dir, data_dir.split('/')[-1] + ".json")
+    train_json_path = os.path.join('data', data_dir.split('/')[-1] + "_train.json")
+    valid_json_path = os.path.join('data', data_dir.split('/')[-1] + "_valid.json")
+
+    if mode == "train" and os.path.exists(train_json_path):
+        print(f"Train index exists. Loading indices from {train_json_path}")
+        with open(train_json_path, 'r') as fp:
+            train = json.load(fp)
+    
+    elif mode != "train" and os.path.exists(valid_json_path):
+        print(f"Valid index exists. Loading indices from {valid_json_path}")
+        with open(valid_json_path, 'r') as fp:
+            valid = json.load(fp)
+
     else:
-        json_path = os.path.join('data', data_dir.split('/')[-1] + ".json")
-    if not os.path.exists(json_path):
+        print(f"Creating new index files {train_json_path} and {valid_json_path}")
+        train_len = cfg['train_sz']
+        valid_len = cfg['val_sz']
         idx = 0
+        train = {}
         for fpath in glob.iglob(os.path.join(data_dir,'**/*.*'), recursive=True):
-            if len(dataset) >= max_len:
+            if len(train) >= train_len:
                 break
             if fpath.split('.')[-1] in ext: 
-                dataset[str(idx)] = fpath
+                train[str(idx)] = fpath
                 idx += 1
 
-        with open(json_path, 'w') as fp:
-            json.dump(dataset, fp)
-    
-    else:
-        print(f"Index exists. Loading indices from {json_path}")
-        with open(json_path, 'r') as fp:
-            dataset = json.load(fp)
+        with open(train_json_path, 'w') as fp:
+            json.dump(train, fp)
 
-    assert len(dataset) > 0
+        idx = 0
+        valid = {}
+        for fpath in glob.iglob(os.path.join(data_dir,'**/*.*'), recursive=True):
+            if len(valid) >= valid_len:
+                break
+            if fpath.split('.')[-1] in ext and fpath not in list(train.values()): 
+                valid[str(idx)] = fpath
+                idx += 1
+
+        with open(valid_json_path, 'w') as fp:
+            json.dump(valid, fp)
+
+    if mode == "train":
+        dataset = train
+    else:
+        dataset = valid
+
     return dataset
 
 def qtile_normalize(y, q, eps=1e-8):
@@ -85,3 +108,9 @@ def count_parameters(model, encoder):
     with open(f'model_summary_{encoder}.txt', 'w') as f:
         f.write(str(table))
     return total_params
+
+
+def main():
+    
+    path = '/import/c4dm-datasets-ext/fma/fma/data/fma_small'
+    # train_json_path = os.path.join('data', path.split('/')[-1] + "_train.json")

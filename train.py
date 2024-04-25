@@ -98,7 +98,7 @@ def save_generated_samples(cfg, generator, val_loader, epoch, save_path='generat
     reconstructed_audios = []
     for fake_spec in fake_specs:
         fake_spec = fake_spec.squeeze().numpy()
-        fake_audio = librosa.griffinlim(fake_spec, hop_length=cfg['hop_length'], win_length=cfg['win_length'])
+        fake_audio = librosa.griffinlim(fake_spec, hop_length=cfg['hop_len'], win_length=cfg['win_len'])
         reconstructed_audios.append(fake_audio)
 
     # Save generated audio files

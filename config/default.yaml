@@ -1,0 +1,30 @@
+# Dataset directories
+data_dir: 'data'
+train_dir: '/import/c4dm-datasets-ext/fma/fma/data/fma_small'
+# val_dir: 'data/valid'
+val_dir: '/import/c4dm-datasets-ext/fma/fma/data/fma_small'
+
+# Model input parameters
+arch: 'fpaint'
+fs: 16000
+dur: 16.38
+norm: 0.95
+win_len: 400
+hop_len: 128
+n_fft: 512
+hpf_pole: 0.98  # spectrogram enhancement
+density: 50.0
+f_sd : 30.0   # how wide to spreak peaks
+maxpksperframe: 128   # maximum number of peaks per frame
+oversamp: 1  # oversample factor for peak detection
+n_frames: 2048
+
+
+# Dataset and Model hyperparameters
+train_sz: 7900
+val_sz: 100
+bsz_train: 32
+tau: 0.05
+lr: 2.0e-4
+n_epochs: 100
+
