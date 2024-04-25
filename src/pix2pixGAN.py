@@ -79,16 +79,16 @@ class Generator(nn.Module):
 class Discriminator(nn.Module):
     def __init__(self, d=64):
         super(Discriminator, self).__init__()
-        self.conv1 = nn.util.spectral_norm(nn.Conv2d(2, d, 4, 2, 1))
-        self.conv2 = nn.util.spectral_norm(nn.Conv2d(d, d * 2, 4, 2, 1))
-        self.conv3 = nn.util.spectral_norm(nn.Conv2d(d * 2, d * 4, 4, 2, 1))
-        self.conv4 = nn.util.spectral_norm(nn.Conv2d(d * 4, d * 8, 4, 2, 1))
-        self.conv5 = nn.util.spectral_norm(nn.Conv2d(d * 8, d * 8, 4, 2, 1))
-        self.conv6 = nn.util.spectral_norm(nn.Conv2d(d * 8, d * 8, 4, 2, 1))
+        self.conv1 = nn.utils.spectral_norm(nn.Conv2d(2, d, 4, 2, 1))
+        self.conv2 = nn.utils.spectral_norm(nn.Conv2d(d, d * 2, 4, 2, 1))
+        self.conv3 = nn.utils.spectral_norm(nn.Conv2d(d * 2, d * 4, 4, 2, 1))
+        self.conv4 = nn.utils.spectral_norm(nn.Conv2d(d * 4, d * 8, 4, 2, 1))
+        self.conv5 = nn.utils.spectral_norm(nn.Conv2d(d * 8, d * 8, 4, 2, 1))
+        self.conv6 = nn.utils.spectral_norm(nn.Conv2d(d * 8, d * 8, 4, 2, 1))
         self.fc = nn.Sequential(
-            nn.util.spectral_norm(nn.Linear(128, 16)),
+            nn.utils.spectral_norm(nn.Linear(128, 16)),
             nn.Sigmoid(),
-            nn.util.spectral_norm(nn.Linear(16, 1)),
+            nn.utils.spectral_norm(nn.Linear(16, 1)),
             nn.Sigmoid()
         )
 
