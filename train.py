@@ -2,6 +2,7 @@ import os
 import numpy as np
 import argparse
 import torch
+import librosa
 import gc
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
@@ -39,7 +40,7 @@ parser.add_argument('--ckp', default='test', type=str,
 
 
 
-def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer):
+def train(train_loader, discriminator, generator, dis_optimizer, gen_optimizer):
     discriminator.train()
     generator.train()
     dis_loss_epoch = 0
@@ -81,6 +82,36 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
     return dis_loss_epoch, gen_loss_epoch
 
 
+def save_generated_samples(cfg, generator, val_loader, epoch, save_path='generated_samples/'):
+    generator.eval()  # Set the generator to evaluation mode
+
+    # Load samples from val_loader
+    input, _ = next(iter(val_loader))
+    input = input.to(device)
+
+    with torch.no_grad():
+        # Generate fake spectrograms
+        noise = torch.randn(input.size(), device=device)
+        fake_specs = generator(torch.cat([input, noise], dim=1))
+
+    # Reconstruct audio from spectrograms using Griffin-Lim algorithm
+    reconstructed_audios = []
+    for fake_spec in fake_specs:
+        fake_spec = fake_spec.squeeze().numpy()
+        fake_audio = librosa.griffinlim(fake_spec, hop_length=cfg['hop_length'], win_length=cfg['win_length'])
+        reconstructed_audios.append(fake_audio)
+
+    # Save generated audio files
+    if not os.path.exists(f'data/{save_path}'):
+        os.mkdir(f'data/{save_path}')
+    for i, audio in enumerate(reconstructed_audios):
+        audio_path = f'{save_path}/generated_audio_epoch_{epoch}_sample_{i+1}.wav'
+        librosa.output.write_wav(audio_path, audio, cfg['fs'])
+
+    generator.train()  # Set the generator back to training mode
+
+
+
 def main():
     args = parser.parse_args()
     cfg = load_config(args.config)
@@ -102,11 +133,16 @@ def main():
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True,
         num_workers=8, pin_memory=True, drop_last=True)
+    
+    val_dataset = FPaintDataset(cfg=cfg, path=valid_dir, train=False)
+    val_loader = torch.utils.data.DataLoader(
+        val_dataset, batch_size=1, shuffle=False,
+        num_workers=1, pin_memory=True, drop_last=True)
 
     
     print("Creating new model...")
-    generator = Generator(cfg).to(device)
-    discriminator = Discriminator(cfg).to(device)
+    generator = Generator().to(device)
+    discriminator = Discriminator().to(device)
 
     print(count_parameters(generator, args.encoder))
     print(count_parameters(discriminator, args.encoder))
@@ -136,6 +172,8 @@ def main():
     for epoch in range(start_epoch+1, num_epochs+1):
         print("#######Epoch {}#######".format(epoch))
         dis_loss_epoch, gen_loss_epoch = train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer)
+        if epoch % 10 == 0:
+            save_generated_samples(cfg, generator, val_loader, epoch)
         writer.add_scalar("Discriminator Loss", dis_loss_epoch, epoch)
         writer.add_scalar("Generator Loss", gen_loss_epoch, epoch)
         dis_loss_log.append(dis_loss_epoch)
