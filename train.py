@@ -40,7 +40,7 @@ parser.add_argument('--ckp', default='test', type=str,
 
 
 
-def train(train_loader, discriminator, generator, dis_optimizer, gen_optimizer):
+def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer):
     discriminator.train()
     generator.train()
     dis_loss_epoch = 0
