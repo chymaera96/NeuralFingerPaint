@@ -33,7 +33,7 @@ class FPaintDataset(Dataset):
 
     def __getitem__(self, idx):
         if idx in self.ignore_idx:
-            return self.__getitem__(np.random.randint(0, len(self)))
+            return self[idx+1]
         
         datapath = self.filenames[str(idx)]
         try:
@@ -41,9 +41,9 @@ class FPaintDataset(Dataset):
             if self.norm:
                 audio = qtile_normalize(audio, self.norm)
         except Exception as e:
-            warnings.warn(f"Error loading {datapath}: {e}")
+            print(f"Error loading {datapath}: {e}")
             self.ignore_idx.append(idx)
-            return self.__getitem__(np.random.randint(0, len(self)))
+            return self[idx+1]
         
         clip_frames = int(self.dur * self.sample_rate)
 
