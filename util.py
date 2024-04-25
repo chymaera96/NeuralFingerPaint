@@ -68,7 +68,7 @@ def load_index(cfg, data_dir, ext=['wav','mp3'], mode="train"):
     return dataset
 
 def qtile_normalize(y, q, eps=1e-8):
-    return y / (eps + torch.quantile(y,q=q))
+    return y / (eps + np.quantile(y,q=q))
 
 
 def load_ckp(checkpoint_path, generator, discriminator, gen_optimizer, dis_optimizer):
