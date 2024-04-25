@@ -61,7 +61,7 @@ class FPaintDataset(Dataset):
 
         audio = audio[start:start+clip_frames]
 
-        if audio.abs().max() < self.silence:
+        if np.max(abs(audio)) < self.silence:
             print("Silence detected. Skipping...")
             return self[idx + 1]
         spec = np.abs(librosa.stft(audio, 
