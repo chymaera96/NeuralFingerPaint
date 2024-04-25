@@ -123,7 +123,7 @@ def compute_gradient_penalty(discriminator, real_data, generated_data):
     interpolated_data.requires_grad_(True)  # Ensure requires_grad is set to True
 
     # Compute discriminator scores for interpolated data
-    mixed_scores = discriminator(interpolated_data)
+    mixed_scores = discriminator(interpolated_data, generated_data)
 
     # Compute gradients of the scores with respect to the interpolated data
     gradients = torch.autograd.grad(outputs=mixed_scores, inputs=interpolated_data,
