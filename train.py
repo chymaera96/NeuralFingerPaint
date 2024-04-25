@@ -5,6 +5,7 @@ import torch
 import librosa
 import gc
 import torch.nn.functional as F
+import soundfile as sf
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -106,7 +107,7 @@ def save_generated_samples(cfg, generator, val_loader, epoch, save_path='generat
         os.mkdir(f'data/{save_path}')
     for i, audio in enumerate(reconstructed_audios):
         audio_path = f'{save_path}/generated_audio_epoch_{epoch}_sample_{i+1}.wav'
-        librosa.output.write_wav(audio_path, audio, cfg['fs'])
+        sf.write(audio_path, audio, cfg['fs'])
 
     generator.train()  # Set the generator back to training mode
 
