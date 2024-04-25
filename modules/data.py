@@ -52,7 +52,6 @@ class FPaintDataset(Dataset):
             audio = audio[start:start+clip_frames]
 
         spec = np.abs(librosa.stft(audio, 
-                                    sr=self.sample_rate, 
                                     n_fft=self.n_fft, 
                                     win_length=self.win_len,
                                     hop_length=self.hop_len))
