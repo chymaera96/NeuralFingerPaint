@@ -8,7 +8,7 @@ import shutil
 import yaml
 from prettytable import PrettyTable
 
-def load_index(data_dir, ext=['wav','mp3'], max_len=10000, inplace=False):
+def load_index(data_dir, ext=['wav','mp3'], max_len=8000, inplace=False):
     dataset = {}
 
     if data_dir.endswith('.json'):
@@ -45,20 +45,17 @@ def load_index(data_dir, ext=['wav','mp3'], max_len=10000, inplace=False):
 def qtile_normalize(y, q, eps=1e-8):
     return y / (eps + torch.quantile(y,q=q))
 
-def load_ckp(checkpoint_fpath, generator, discriminator, gen_optimizer, dis_optimizer):
-    checkpoint = torch.load(checkpoint_fpath)
-    model.load_state_dict(checkpoint['state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer'])
-    scheduler.load_state_dict(checkpoint['scheduler'])
 
-def load_checkpoint(checkpoint_path, generator, discriminator, gen_optimizer, dis_optimizer):
+def load_ckp(checkpoint_path, generator, discriminator, gen_optimizer, dis_optimizer):
     checkpoint = torch.load(checkpoint_path)
-    generator.load_state_dict(checkpoint['generator_state_dict'])
-    discriminator.load_state_dict(checkpoint['discriminator_state_dict'])
+    generator.load_state_dict(checkpoint['gen_state_dict'])
+    discriminator.load_state_dict(checkpoint['dis_state_dict'])
     gen_optimizer.load_state_dict(checkpoint['gen_optimizer'])
     dis_optimizer.load_state_dict(checkpoint['dis_optimizer'])
     epoch = checkpoint['epoch']
-    return generator, discriminator, gen_optimizer, dis_optimizer, epoch
+    gen_loss = checkpoint['gen_loss']
+    dis_loss = checkpoint['dis_loss']
+    return generator, discriminator, gen_optimizer, dis_optimizer, epoch, gen_loss, dis_loss
 
 
 
