@@ -88,7 +88,7 @@ def save_generated_samples(cfg, generator, val_loader, epoch, save_path='data/ge
     if not os.path.exists(f'{save_path}'):
         os.mkdir(f'{save_path}')
     # Load samples from val_loader
-    input, _ = next(iter(val_loader))
+    input, path = next(iter(val_loader))
     input = input.to(device)
 
     with torch.no_grad():
@@ -108,7 +108,7 @@ def save_generated_samples(cfg, generator, val_loader, epoch, save_path='data/ge
     if not os.path.exists(f'data/{save_path}'):
         os.mkdir(f'data/{save_path}')
     for i, audio in enumerate(reconstructed_audios):
-        audio_path = f'{save_path}/generated_audio_epoch_{epoch}_sample_{i+1}.wav'
+        audio_path = f'{save_path}/generated_audio_epoch_{epoch}_sample_{path}.wav'
         sf.write(audio_path, audio, cfg['fs'])
 
     generator.train()  # Set the generator back to training mode

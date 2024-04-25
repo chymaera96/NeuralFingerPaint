@@ -80,8 +80,11 @@ class FPaintDataset(Dataset):
             
         target = torch.from_numpy(librosa.amplitude_to_db(spec)).unsqueeze(0).float()
         peaks = torch.from_numpy(peaks).unsqueeze(0).float()
-        return peaks, target
-    
+
+        if self.train:
+            return peaks, target
+        else:
+            return peaks, datapath    
 
     def __len__(self):
         return len(self.filenames)
