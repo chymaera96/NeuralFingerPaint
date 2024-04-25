@@ -25,6 +25,7 @@ class FPaintDataset(Dataset):
         self.hop_len = cfg['hop_len']
         self.win_len = cfg['win_len']
         self.n_frames = cfg['n_frames']
+        self.silence = cfg['silence']
         self.size = cfg['train_sz'] if train else cfg['val_sz']
         if train:
             self.filenames = load_index(cfg, path, mode="train")
@@ -51,12 +52,18 @@ class FPaintDataset(Dataset):
         if self.train:
             try:
                 start = np.random.randint(0, len(audio) - clip_frames)
-                audio = audio[start:start+clip_frames]
             except:
                 print(f"Audio length is {len(audio)/self.sample_rate} seconds. Skipping {datapath}")
                 self.ignore_idx.append(idx)
                 return self[idx+1]
+        else:
+            start = 0
 
+        audio = audio[start:start+clip_frames]
+
+        if audio.abs().max() < self.silence:
+            print("Silence detected. Skipping...")
+            return self[idx + 1]
         spec = np.abs(librosa.stft(audio, 
                                     n_fft=self.n_fft, 
                                     win_length=self.win_len,
@@ -84,7 +91,7 @@ class FPaintDataset(Dataset):
         if self.train:
             return peaks, target
         else:
-            return peaks, datapath    
+            return peaks, datapath.split('/')[-1]    
 
     def __len__(self):
         return len(self.filenames)
