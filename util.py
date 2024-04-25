@@ -10,6 +10,8 @@ from prettytable import PrettyTable
 
 def load_index(cfg, data_dir, ext=['wav','mp3'], mode="train"):
 
+    if not os.path.exists('data'):
+        os.mkdir('data')
     if data_dir.endswith('.json'):
         print(f"=>Loading indices from index file {data_dir}")
         with open(data_dir, 'r') as fp:
