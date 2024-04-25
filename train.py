@@ -105,8 +105,6 @@ def save_generated_samples(cfg, generator, val_loader, epoch, save_path='data/ge
         reconstructed_audios.append(fake_audio)
 
     # Save generated audio files
-    if not os.path.exists(f'data/{save_path}'):
-        os.mkdir(f'data/{save_path}')
     for i, audio in enumerate(reconstructed_audios):
         audio_path = f'{save_path}/generated_audio_epoch_{epoch}_sample_{path}.wav'
         sf.write(audio_path, audio, cfg['fs'])
