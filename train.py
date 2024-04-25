@@ -144,8 +144,8 @@ def main():
     generator = Generator().to(device)
     discriminator = Discriminator().to(device)
 
-    print(count_parameters(generator, args.encoder))
-    print(count_parameters(discriminator, args.encoder))
+    print(count_parameters(generator, 'generator'))
+    print(count_parameters(discriminator, 'discriminator'))
 
     gen_optimizer = torch.optim.Adam(generator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
     dis_optimizer = torch.optim.Adam(discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
