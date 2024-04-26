@@ -73,11 +73,11 @@ class FPaintDataset(Dataset):
         # spec = spec[:-1, :]
 
         # Compute constant-Q spectrogram
-        spec = librosa.cqt(audio, 
+        spec = np.abs(librosa.cqt(audio, 
                            sr=self.sample_rate, 
                            hop_length=self.hop_len, 
-                           n_bins=252, 
-                           bins_per_octave=36)
+                           n_bins=self.cfg['n_bins'], 
+                           bins_per_octave=36))
         
         # Pad to 256 frequency bins
         if spec.shape[0] < 256:

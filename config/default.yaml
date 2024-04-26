@@ -7,7 +7,7 @@ val_dir: '/import/c4dm-datasets/PiJAMA/data'
 # Model input parameters
 arch: 'fpaint'
 fs: 16000
-dur: 2.0475
+dur: 4.095
 norm: 0.95
 win_len: 400
 hop_len: 128
@@ -18,7 +18,7 @@ density: 1000.0
 f_sd : 15.0   # how wide to spreak peaks
 maxpksperframe: 128  # maximum number of peaks per frame
 oversamp: 1  # oversample factor for peak detection
-n_frames: 256
+n_frames: 512
 silence: 0.0005  # silence threshold
 lambda: 0.1  # weight for the R1 penalty
 
@@ -28,7 +28,7 @@ train_sz: 2700
 val_sz: 50
 bsz_train: 16
 tau: 0.05
-d_lr: 5.0e-5
-g_lr: 6.0e-4
+d_lr: 2.0e-5
+g_lr: 3.0e-4
 n_epochs: 100
 

@@ -118,14 +118,20 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
         sf.write(audio_path, audio, cfg['fs'])
         # save spectrogram
         spec_path = f'{save_path}/spec_model_{ckp}_epoch_{epoch}_sample_{path[0]}.png'
-        # Save librosa specshow spectrogram
+        # Save librosa specshow cqt spectrogram
         plt.figure(figsize=(10, 4))
-        librosa.display.specshow(librosa.amplitude_to_db(fake_specs[i].squeeze().detach().cpu().numpy(), ref=np.max),
-                                    y_axis='log', x_axis='time', sr=cfg['fs'], hop_length=cfg['hop_len'])
+        librosa.display.specshow(librosa.amplitude_to_db(fake_specs[i].squeeze().detach().cpu().numpy()), sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
         plt.colorbar(format='%+2.0f dB')
         plt.title('Generated Spectrogram')
-        plt.tight_layout()
         plt.savefig(spec_path)
+        plt.close()
+
+        if epoch == 0:
+            # Save input spectrogram
+            input_spec_path = f'{save_path}/input_spec_sample_{path[0]}.png'
+            plt.figure(figsize=(10, 4))
+            librosa.display.specshow(input.squeeze().detach().cpu().numpy(), sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
+
     generator.train()  # Set the generator back to training mode
 
 
