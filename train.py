@@ -7,6 +7,7 @@ import gc
 import torch.nn.functional as F
 import soundfile as sf
 from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
 
 
 
@@ -69,6 +70,8 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
 
         # Train generator
         gen_optimizer.zero_grad()
+        noise = torch.randn(input.size(), device=device)  # Generate new noise
+        fake_spec = generator(torch.cat([input, noise], dim=1))
         gen_output = discriminator(input, fake_spec)
         gen_loss = hinge_loss_gen(gen_output)
         gen_loss.backward()
@@ -112,7 +115,16 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
     for i, audio in enumerate(reconstructed_audios):
         audio_path = f'{save_path}/audio_model_{ckp}_epoch_{epoch}_sample_{path[0]}.wav'
         sf.write(audio_path, audio, cfg['fs'])
-
+        # save spectrogram
+        spec_path = f'{save_path}/spec_model_{ckp}_epoch_{epoch}_sample_{path[0]}.png'
+        # Save librosa specshow spectrogram
+        plt.figure(figsize=(10, 4))
+        librosa.display.specshow(librosa.amplitude_to_db(fake_specs[i].squeeze().detach().cpu().numpy(), ref=np.max),
+                                    y_axis='log', x_axis='time', sr=cfg['fs'], hop_length=cfg['hop_len'])
+        plt.colorbar(format='%+2.0f dB')
+        plt.title('Generated Spectrogram')
+        plt.tight_layout()
+        plt.savefig(spec_path)
     generator.train()  # Set the generator back to training mode
 
 
@@ -151,8 +163,8 @@ def main():
     print(count_parameters(generator, 'generator'))
     print(count_parameters(discriminator, 'discriminator'))
 
-    gen_optimizer = torch.optim.Adam(generator.parameters(), lr=cfg['g_lr'], betas=(0.5, 0.999))
-    dis_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg['d_lr'], betas=(0.5, 0.999))
+    gen_optimizer = torch.optim.Adam(generator.parameters(), lr=cfg['g_lr'], betas=(0.5, 0.9))
+    dis_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg['d_lr'], betas=(0.5, 0.9))
        
     if args.resume:
         if os.path.isfile(args.resume):

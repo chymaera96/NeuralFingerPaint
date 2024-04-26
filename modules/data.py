@@ -69,6 +69,13 @@ class FPaintDataset(Dataset):
                                     win_length=self.win_len,
                                     hop_length=self.hop_len))
 
+        # Compute constant-Q spectrogram
+        # spec = librosa.cqt(audio, 
+        #                    sr=self.sample_rate, 
+        #                    hop_length=self.hop_len, 
+        #                    n_bins=252, 
+        #                    bins_per_octave=36)
+
         # Get rid of extra bin
         spec = spec[:-1, :]
         # Pad to n_frames

@@ -7,15 +7,15 @@ val_dir: '/import/c4dm-datasets/PiJAMA/data'
 # Model input parameters
 arch: 'fpaint'
 fs: 16000
-dur: 16.38
+dur: 2.0475
 norm: 0.95
 win_len: 400
 hop_len: 128
 n_fft: 512
 hpf_pole: 0.98  # spectrogram enhancement
 density: 1000.0
-f_sd : 0.5   # how wide to spreak peaks
-maxpksperframe: 256   # maximum number of peaks per frame
+f_sd : 30.0   # how wide to spreak peaks
+maxpksperframe: 64  # maximum number of peaks per frame
 oversamp: 1  # oversample factor for peak detection
 n_frames: 2048
 silence: 0.0005  # silence threshold
