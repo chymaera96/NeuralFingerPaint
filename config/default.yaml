@@ -1,8 +1,8 @@
 # Dataset directories
 data_dir: 'data'
-train_dir: '/import/c4dm-datasets/MAPS_working'
+train_dir: '/import/c4dm-datasets/PiJAMA'
 # val_dir: 'data/valid'
-val_dir: '/import/c4dm-datasets/MAPS_working'
+val_dir: '/import/c4dm-datasets/PiJAMA'
 
 # Model input parameters
 arch: 'fpaint'
@@ -23,7 +23,7 @@ lambda: 0.1  # weight for the R1 penalty
 
 
 # Dataset and Model hyperparameters
-train_sz: 15000
+train_sz: 7900
 val_sz: 100
 bsz_train: 32
 tau: 0.05
