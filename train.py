@@ -77,7 +77,7 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
         dis_loss_epoch += dis_loss.item()
         gen_loss_epoch += gen_loss.item()
 
-        if idx % 100 == 0:
+        if idx % 50 == 0:
             print(
                 f"Step[{idx}/{len(train_loader)}] Loss D: {dis_loss.item()}, Loss G: {gen_loss.item()}"
             )
@@ -173,7 +173,7 @@ def main():
     for epoch in range(start_epoch+1, num_epochs+1):
         print("#######Epoch {}#######".format(epoch))
         dis_loss_epoch, gen_loss_epoch = train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer)
-        if epoch % 10 == 0:
+        if epoch % 5 == 0:
             save_generated_samples(cfg, generator, val_loader, ckp=args.ckp, epoch=epoch)
         writer.add_scalar("Discriminator Loss", dis_loss_epoch, epoch)
         writer.add_scalar("Generator Loss", gen_loss_epoch, epoch)
@@ -190,7 +190,7 @@ def main():
             'gen_optimizer': gen_optimizer.state_dict()
         }
         save_ckp(checkpoint, model_name, model_folder, 'current')
-        if epoch % 10 == 0:
+        if epoch % 5 == 0:
             save_ckp(checkpoint, model_name, model_folder, str(epoch))
   
         

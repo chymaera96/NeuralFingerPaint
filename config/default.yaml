@@ -23,10 +23,10 @@ lambda: 0.1  # weight for the R1 penalty
 
 
 # Dataset and Model hyperparameters
-train_sz: 7900
+train_sz: 15000
 val_sz: 100
 bsz_train: 32
 tau: 0.05
-lr: 6.0e-5
+lr: 9.0e-5
 n_epochs: 100
 
