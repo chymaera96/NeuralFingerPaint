@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Generator(nn.Module):
-    def __init__(self, d=32):
+    def __init__(self, d=48):
         super(Generator, self).__init__()
         # Unet encoder
         self.conv1 = nn.Conv2d(2, d, 4, 2, 1)
@@ -77,7 +77,7 @@ class Generator(nn.Module):
         return o
 
 class Discriminator(nn.Module):
-    def __init__(self, d=32):
+    def __init__(self, d=48):
         super(Discriminator, self).__init__()
         self.conv1 = nn.utils.spectral_norm(nn.Conv2d(2, d, 4, 2, 1))
         self.conv2 = nn.utils.spectral_norm(nn.Conv2d(d, d * 2, 4, 2, 1))
