@@ -64,20 +64,26 @@ class FPaintDataset(Dataset):
         if np.max(abs(audio)) < self.silence:
             print("Silence detected. Skipping...")
             return self[idx + 1]
-        spec = np.abs(librosa.stft(audio, 
-                                    n_fft=self.n_fft, 
-                                    win_length=self.win_len,
-                                    hop_length=self.hop_len))
+        # spec = np.abs(librosa.stft(audio, 
+        #                             n_fft=self.n_fft, 
+        #                             win_length=self.win_len,
+        #                             hop_length=self.hop_len))
+
+        # # Get rid of extra bin
+        # spec = spec[:-1, :]
 
         # Compute constant-Q spectrogram
-        # spec = librosa.cqt(audio, 
-        #                    sr=self.sample_rate, 
-        #                    hop_length=self.hop_len, 
-        #                    n_bins=252, 
-        #                    bins_per_octave=36)
+        spec = librosa.cqt(audio, 
+                           sr=self.sample_rate, 
+                           hop_length=self.hop_len, 
+                           n_bins=252, 
+                           bins_per_octave=36)
+        
+        # Pad to 256 frequency bins
+        if spec.shape[0] < 256:
+            pad = np.zeros((256 - spec.shape[0], spec.shape[1]))
+            spec = np.concatenate([spec, pad], axis=0)
 
-        # Get rid of extra bin
-        spec = spec[:-1, :]
         # Pad to n_frames
         if spec.shape[1] < self.n_frames:
             pad = np.zeros((spec.shape[0], self.n_frames - spec.shape[1]))
@@ -91,6 +97,8 @@ class FPaintDataset(Dataset):
 
         if self.transform is not None:
             spec = self.transform(spec)
+
+        assert spec.shape == (256, self.n_frames), f"Expected shape (256, {self.n_frames}), but got {spec.shape}"
             
         target = torch.from_numpy(librosa.amplitude_to_db(spec)).unsqueeze(0).float()
         peaks = torch.from_numpy(peaks).unsqueeze(0).float()

@@ -106,9 +106,10 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
     for fake_spec in fake_specs:
         fake_spec = fake_spec.squeeze().detach().cpu().numpy()
         assert len(fake_spec.shape) == 2, f"Expected 2D spectrogram, but got {fake_spec.shape}"
-        if fake_spec.shape[0] == cfg['n_fft'] // 2 + 1:
-            fake_spec = fake_spec[:-1, :]
-        fake_audio = librosa.griffinlim(fake_spec, hop_length=cfg['hop_len'], win_length=cfg['win_len'])
+        # if fake_spec.shape[0] == cfg['n_fft'] // 2 + 1:
+        #     fake_spec = fake_spec[:-1, :]
+        fake_spec = fake_spec[:252, :] # Remove extra bins for CQT
+        fake_audio = librosa.griffinlim_cqt(fake_spec, sr=cfg['fs'], bins_per_octave=36)
         reconstructed_audios.append(fake_audio)
 
     # Save generated audio files

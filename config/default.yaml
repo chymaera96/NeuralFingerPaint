@@ -12,10 +12,11 @@ norm: 0.95
 win_len: 400
 hop_len: 128
 n_fft: 512
+n_bins: 252
 hpf_pole: 0.98  # spectrogram enhancement
 density: 1000.0
-f_sd : 30.0   # how wide to spreak peaks
-maxpksperframe: 64  # maximum number of peaks per frame
+f_sd : 15.0   # how wide to spreak peaks
+maxpksperframe: 128  # maximum number of peaks per frame
 oversamp: 1  # oversample factor for peak detection
 n_frames: 256
 silence: 0.0005  # silence threshold
@@ -28,6 +29,6 @@ val_sz: 50
 bsz_train: 16
 tau: 0.05
 d_lr: 5.0e-5
-g_lr: 1.0e-4
+g_lr: 6.0e-4
 n_epochs: 100
 
