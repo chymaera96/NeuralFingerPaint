@@ -109,7 +109,7 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
         # if fake_spec.shape[0] == cfg['n_fft'] // 2 + 1:
         #     fake_spec = fake_spec[:-1, :]
         fake_spec = fake_spec[:252, :] # Remove extra bins for CQT
-        fake_audio = librosa.griffinlim_cqt(fake_spec, sr=cfg['fs'], bins_per_octave=36)
+        fake_audio = librosa.griffinlim_cqt(fake_spec, sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
         reconstructed_audios.append(fake_audio)
 
     # Save generated audio files
