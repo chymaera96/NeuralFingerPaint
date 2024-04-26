@@ -1,8 +1,8 @@
 # Dataset directories
 data_dir: 'data'
-train_dir: '/import/c4dm-datasets-ext/fma/fma/data/fma_small'
+train_dir: '/import/c4dm-datasets/MAPS_working'
 # val_dir: 'data/valid'
-val_dir: '/import/c4dm-datasets-ext/fma/fma/data/fma_small'
+val_dir: '/import/c4dm-datasets/MAPS_working'
 
 # Model input parameters
 arch: 'fpaint'

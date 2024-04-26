@@ -85,7 +85,7 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
     return dis_loss_epoch, gen_loss_epoch
 
 
-def save_generated_samples(cfg, generator, val_loader, epoch, save_path='data/generated_samples'):
+def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='data/generated_samples'):
     generator.eval()  # Set the generator to evaluation mode
     if not os.path.exists(f'{save_path}'):
         os.mkdir(f'{save_path}')
@@ -103,12 +103,12 @@ def save_generated_samples(cfg, generator, val_loader, epoch, save_path='data/ge
     for fake_spec in fake_specs:
         fake_spec = fake_spec.squeeze().detach().cpu().numpy()
         assert len(fake_spec.shape) == 2, f"Expected 2D spectrogram, but got {fake_spec.shape}"
-        fake_audio = librosa.griffinlim(fake_spec, hop_length=cfg['hop_len'], win_length=cfg['win_len'])
+        fake_audio = librosa.griffinlim(fake_spec, hop_length=cfg['hop_len'], win_length=cfg['win_len'], n_fft=cfg['n_fft'])
         reconstructed_audios.append(fake_audio)
 
     # Save generated audio files
     for i, audio in enumerate(reconstructed_audios):
-        audio_path = f'{save_path}/generated_audio_epoch_{epoch}_sample_{path[0]}.wav'
+        audio_path = f'{save_path}/audio_model_{ckp}_epoch_{epoch}_sample_{path[0]}.wav'
         sf.write(audio_path, audio, cfg['fs'])
 
     generator.train()  # Set the generator back to training mode
@@ -174,7 +174,7 @@ def main():
         print("#######Epoch {}#######".format(epoch))
         dis_loss_epoch, gen_loss_epoch = train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer)
         if epoch % 10 == 0:
-            save_generated_samples(cfg, generator, val_loader, epoch)
+            save_generated_samples(cfg, generator, val_loader, ckp=args.ckp, epoch=epoch)
         writer.add_scalar("Discriminator Loss", dis_loss_epoch, epoch)
         writer.add_scalar("Generator Loss", gen_loss_epoch, epoch)
         dis_loss_log.append(dis_loss_epoch)

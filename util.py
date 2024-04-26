@@ -137,5 +137,16 @@ def compute_gradient_penalty(discriminator, input, real_data, generated_data):
 
 def main():
     
-    path = '/import/c4dm-datasets-ext/fma/fma/data/fma_small'
+    path = '/import/c4dm-datasets/MAPS_working'
     # train_json_path = os.path.join('data', path.split('/')[-1] + "_train.json")
+    # Recursively count all wav or mp3 files in the directory
+    idx = 0
+    for fpath in glob.iglob(os.path.join(path,'**/*.*'), recursive=True):
+        if fpath.split('.')[-1] in ['wav','mp3']: 
+            idx += 1
+
+    print(f"Total files: {idx}")
+
+
+if __name__ == "__main__":
+    main()
