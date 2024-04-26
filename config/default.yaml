@@ -17,7 +17,7 @@ density: 1000.0
 f_sd : 30.0   # how wide to spreak peaks
 maxpksperframe: 64  # maximum number of peaks per frame
 oversamp: 1  # oversample factor for peak detection
-n_frames: 2048
+n_frames: 256
 silence: 0.0005  # silence threshold
 lambda: 0.1  # weight for the R1 penalty
 

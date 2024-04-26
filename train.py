@@ -70,7 +70,7 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
 
         # Train generator
         gen_optimizer.zero_grad()
-        noise = torch.randn(input.size(), device=device)  # Generate new noise
+        noise = torch.randn(input.size(), device=device) 
         fake_spec = generator(torch.cat([input, noise], dim=1))
         gen_output = discriminator(input, fake_spec)
         gen_loss = hinge_loss_gen(gen_output)
