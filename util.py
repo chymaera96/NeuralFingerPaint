@@ -137,7 +137,7 @@ def compute_gradient_penalty(discriminator, input, real_data, generated_data):
 
 def main():
     
-    path = '/import/c4dm-datasets/maestro-v3.0.0'
+    path = '/import/c4dm-datasets/PiJAMA'
     # train_json_path = os.path.join('data', path.split('/')[-1] + "_train.json")
     # Recursively count all wav or mp3 files in the directory
     idx = 0
