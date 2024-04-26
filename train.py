@@ -127,7 +127,6 @@ def main():
     
     # Hyperparameters
     batch_size = cfg['bsz_train']
-    learning_rate = cfg['lr']
     num_epochs = cfg['n_epochs']
     model_name = args.ckp
     random_seed = args.seed
@@ -152,8 +151,8 @@ def main():
     print(count_parameters(generator, 'generator'))
     print(count_parameters(discriminator, 'discriminator'))
 
-    gen_optimizer = torch.optim.Adam(generator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
-    dis_optimizer = torch.optim.Adam(discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
+    gen_optimizer = torch.optim.Adam(generator.parameters(), lr=cfg['g_lr'], betas=(0.5, 0.999))
+    dis_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg['d_lr'], betas=(0.5, 0.999))
        
     if args.resume:
         if os.path.isfile(args.resume):
