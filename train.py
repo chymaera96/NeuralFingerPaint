@@ -139,15 +139,14 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
     with torch.no_grad():
         for idx, (input, spec_min, spec_max, datapath) in enumerate(val_loader):
             input = input.to(device)
-            spec_min = spec_min.to(device)
-            spec_max = spec_max.to(device)
+
             noise = torch.randn(input.size(), device=device)
             fake_spec = generator(torch.cat([input, noise], dim=1))
-            fake_spec = fake_spec * (spec_max - spec_min) + spec_min
-            fake_spec = fake_spec.squeeze(0).cpu().numpy()
-            # spec_min = spec_min.cpu().numpy()
-            # spec_max = spec_max.cpu().numpy()
+            fake_spec = fake_spec.squeeze(0).squeeze().cpu().numpy()
+            spec_min = spec_min.cpu().numpy()
+            spec_max = spec_max.cpu().numpy()
             fake_spec = fake_spec[:252, :]
+            fake_spec = fake_spec * (spec_max - spec_min) + spec_min
             assert fake_spec.shape == (252, cfg['n_frames']), f"Expected shape (252, {cfg['n_frames']}), but got {fake_spec.shape}"
             # Save generated spectrogram
             save_path = os.path.join(save_path, ckp)
@@ -220,9 +219,10 @@ def main():
 
     for epoch in range(start_epoch+1, num_epochs+1):
         print("#######Epoch {}#######".format(epoch))
-        dis_loss_epoch, gen_loss_epoch = train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer)
+        # dis_loss_epoch, gen_loss_epoch = train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer)
         if epoch % 5 == 0:
             save_generated_samples(cfg, generator, val_loader, ckp=args.ckp, epoch=epoch)
+        return
         writer.add_scalar("Discriminator Loss", dis_loss_epoch, epoch)
         writer.add_scalar("Generator Loss", gen_loss_epoch, epoch)
         dis_loss_log.append(dis_loss_epoch)
