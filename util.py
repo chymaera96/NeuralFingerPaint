@@ -111,28 +111,18 @@ def count_parameters(model, encoder):
         f.write(str(table))
     return total_params
 
-def compute_gradient_penalty(discriminator, input, real_data, generated_data):
-    batch_size = real_data.size(0)
-    device = real_data.device
-
-    # Generate random epsilon
-    epsilon = torch.rand(batch_size, 1, 1, 1).to(device)
-
-    # Create interpolated data
-    interpolated_data = epsilon * real_data + (1 - epsilon) * generated_data
-    interpolated_data.requires_grad_(True)  # Ensure requires_grad is set to True
-
-    # Compute discriminator scores for interpolated data
-    mixed_scores = discriminator(input, interpolated_data)
-
-    # Compute gradient penalty
-    gradients = torch.autograd.grad(outputs=mixed_scores, inputs=interpolated_data,
-                                    grad_outputs=torch.ones_like(mixed_scores),
-                                    create_graph=True)[0]
-
-    # Compute gradient penalty
-    gradient_penalty = (gradients.view(batch_size, -1).norm(2, dim=1) ** 2).mean()
-    return gradient_penalty
+def compute_r1_penalty(real_output, real_images, device):
+    real_grad_out = torch.ones((real_output.size(0), 1, 1, 1), device=device)
+    real_grad = torch.autograd.grad(
+        outputs=real_output,
+        inputs=real_images,
+        grad_outputs=real_grad_out,
+        create_graph=True,
+        retain_graph=True,
+        only_inputs=True,
+    )[0]
+    r1_penalty = torch.sum(real_grad.pow(2), dim=[1, 2, 3])
+    return r1_penalty
 
 
 def main():

@@ -63,8 +63,8 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
         dis_fake_output = discriminator(input, fake_spec.detach())
 
         dis_loss = hinge_loss_dis(dis_real_output, dis_fake_output)
-        # gradient_penalty = compute_gradient_penalty(discriminator, input, target, fake_spec)
-        # dis_loss += cfg['lambda'] * gradient_penalty
+        gradient_penalty = compute_r1_penalty(dis_real_output, target, device)
+        dis_loss += cfg['lambda'] * gradient_penalty
         dis_loss.backward()
         dis_optimizer.step()
 
@@ -126,7 +126,7 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
         plt.savefig(spec_path)
         plt.close()
 
-        if epoch == 0:
+        if epoch == 5:
             # Save input spectrogram
             input_spec_path = f'{save_path}/input_spec_sample_{path[0]}.png'
             plt.figure(figsize=(10, 4))
