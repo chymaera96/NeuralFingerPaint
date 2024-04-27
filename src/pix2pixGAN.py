@@ -52,9 +52,9 @@ class UNetUp(nn.Module):
         return x
 
 
-class GeneratorUNet(nn.Module):
+class Generator(nn.Module):
     def __init__(self, in_channels=2, out_channels=1):
-        super(GeneratorUNet, self).__init__()
+        super(Generator, self).__init__()
 
         self.down1 = UNetDown(in_channels, 64, normalize=False)
         self.down2 = UNetDown(64, 128)
