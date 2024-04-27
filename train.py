@@ -101,7 +101,7 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
 
     # Copy audio files to save_path
     for i, p in enumerate(path):
-        audio_path = f'{save_path}/{p}'
+        audio_path = f'{save_path}/{p.split("/")[-1]}'
         if not os.path.exists(audio_path):
             shutil.copy(p, audio_path)
 
@@ -118,10 +118,11 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
 
     # Save generated audio files
     for i, audio in enumerate(reconstructed_audios):
-        audio_path = f'{save_path}/audio_model_{ckp}_epoch_{epoch}_sample_{path[0]}.wav'
+        fname = path[0].split('/')[-1]
+        audio_path = f'{save_path}/audio_model_{ckp}_epoch_{epoch}_sample_{fname}.wav'
         sf.write(audio_path, audio, cfg['fs'])
         # save spectrogram
-        spec_path = f'{save_path}/spec_model_{ckp}_epoch_{epoch}_sample_{path[0]}.png'
+        spec_path = f'{save_path}/spec_model_{ckp}_epoch_{epoch}_sample_{fname}.png'
         # Save librosa specshow cqt spectrogram
         plt.figure(figsize=(10, 4))
         librosa.display.specshow(librosa.amplitude_to_db(fake_specs[i].squeeze().detach().cpu().numpy()), sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
@@ -132,7 +133,7 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
 
         if epoch == 5:
             # Save input spectrogram
-            input_spec_path = f'{save_path}/input_spec_sample_{path[0]}.png'
+            input_spec_path = f'{save_path}/input_spec_sample_{fname}.png'
             plt.figure(figsize=(10, 4))
             librosa.display.specshow(input.squeeze().detach().cpu().numpy(), sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
             plt.colorbar(format='%+2.0f dB')

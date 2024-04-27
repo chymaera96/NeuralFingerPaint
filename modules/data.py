@@ -106,7 +106,7 @@ class FPaintDataset(Dataset):
         if self.train:
             return peaks, target
         else:
-            return peaks, datapath.split('/')[-1]    
+            return peaks, datapath  
 
     def __len__(self):
         return len(self.filenames)
