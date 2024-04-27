@@ -49,15 +49,15 @@ class FPaintDataset(Dataset):
         
         clip_frames = int(self.dur * self.sample_rate)
 
-        # if self.train:
-        try:
-            start = np.random.randint(0, len(audio) - clip_frames)
-        except:
-            print(f"Audio length is {len(audio)/self.sample_rate} seconds. Skipping {datapath}")
-            self.ignore_idx.append(idx)
-            return self[idx+1]
-        # else:
-        #     start = 0
+        if self.train:
+            try:
+                start = np.random.randint(0, len(audio) - clip_frames)
+            except:
+                print(f"Audio length is {len(audio)/self.sample_rate} seconds. Skipping {datapath}")
+                self.ignore_idx.append(idx)
+                return self[idx+1]
+        else:
+            start = 2.0 * self.sample_rate # Arbitrary start point for validation
 
         audio = audio[start:start+clip_frames]
 

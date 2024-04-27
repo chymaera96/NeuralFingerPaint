@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import soundfile as sf
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
-
+import shutil
 
 
 from util import *
@@ -99,6 +99,12 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
         noise = torch.randn(input.size(), device=device)
         fake_specs = generator(torch.cat([input, noise], dim=1))
 
+    # Copy audio files to save_path
+    for i, p in enumerate(path):
+        audio_path = f'{save_path}/{p}'
+        if not os.path.exists(audio_path):
+            shutil.copy(p, audio_path)
+
     # Reconstruct audio from spectrograms using Griffin-Lim algorithm
     reconstructed_audios = []
     for fake_spec in fake_specs:
@@ -129,9 +135,16 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             input_spec_path = f'{save_path}/input_spec_sample_{path[0]}.png'
             plt.figure(figsize=(10, 4))
             librosa.display.specshow(input.squeeze().detach().cpu().numpy(), sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
+            plt.colorbar(format='%+2.0f dB')
+            plt.title('Peak Map')
+            plt.savefig(spec_path)
+            plt.close()
 
     generator.train()  # Set the generator back to training mode
 
+# def save_generated_samples(cfg, generator, ckp, epoch, save_path='data/generated_samples'):
+
+#     fpath = '/import/c4dm-datasets/MAPS_working/MAPS/AkPnBcht/MUS/MAPS_MUS-chpn-p1_AkPnBcht.wav'
 
 
 def main():

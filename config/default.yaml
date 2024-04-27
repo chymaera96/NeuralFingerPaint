@@ -28,7 +28,7 @@ train_sz: 2700
 val_sz: 50
 bsz_train: 16
 tau: 0.05
-d_lr: 4.0e-5
-g_lr: 2.0e-5
+d_lr: 2.0e-4
+g_lr: 2.0e-4
 n_epochs: 100
 
