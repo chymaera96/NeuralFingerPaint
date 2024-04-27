@@ -146,14 +146,14 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             spec_max = spec_max.cpu().numpy()
             fake_spec = fake_spec * (spec_max - spec_min) + spec_min
             fake_spec = fake_spec[:252, :]
-
+            assert fake_spec.shape == (252, cfg['n_frames']), f"Expected shape (252, {cfg['n_frames']}), but got {fake_spec.shape}"
             # Save generated spectrogram
             save_path = os.path.join(save_path, ckp)
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
             save_name = f"{datapath[0].split('/')[-1].split('.')[0]}_{epoch}.png"
             save_name = os.path.join(save_path, save_name)
-            plt.imsave(save_name, fake_spec, cmap='viridis', origin='lower')
+            plt.imsave(save_name, fake_spec, cmap='gray', origin='lower')
             print(f"Saved {save_name}")
 
             # Save audio
