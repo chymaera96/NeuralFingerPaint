@@ -141,10 +141,10 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             input = input.to(device)
             noise = torch.randn(input.size(), device=device)
             fake_spec = generator(torch.cat([input, noise], dim=1))
-            fake_spec = fake_spec.squeeze(0).cpu().numpy()
-            spec_min = spec_min.cpu().numpy()
-            spec_max = spec_max.cpu().numpy()
             fake_spec = fake_spec * (spec_max - spec_min) + spec_min
+            fake_spec = fake_spec.squeeze(0).cpu().numpy()
+            # spec_min = spec_min.cpu().numpy()
+            # spec_max = spec_max.cpu().numpy()
             fake_spec = fake_spec[:252, :]
             assert fake_spec.shape == (252, cfg['n_frames']), f"Expected shape (252, {cfg['n_frames']}), but got {fake_spec.shape}"
             # Save generated spectrogram
@@ -153,7 +153,7 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
                 os.makedirs(save_path)
             save_name = f"{datapath[0].split('/')[-1].split('.')[0]}_{epoch}.png"
             save_name = os.path.join(save_path, save_name)
-            plt.imsave(save_name, fake_spec, cmap='gray', origin='lower')
+            plt.imsave(save_name, fake_spec, cmap='viridis', origin='lower')
             print(f"Saved {save_name}")
 
             # Save audio
