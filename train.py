@@ -145,6 +145,7 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             fake_spec = fake_spec.squeeze(0).squeeze().cpu().numpy()
             spec_min = spec_min.cpu().numpy()
             spec_max = spec_max.cpu().numpy()
+            print(spec_min, spec_max)
             fake_spec = fake_spec[:252, :]
             fake_spec = fake_spec * (spec_max - spec_min) + spec_min
             assert fake_spec.shape == (252, cfg['n_frames']), f"Expected shape (252, {cfg['n_frames']}), but got {fake_spec.shape}"
