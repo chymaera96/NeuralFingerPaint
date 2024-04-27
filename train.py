@@ -42,51 +42,6 @@ parser.add_argument('--ckp', default='test', type=str,
 
 
 
-# def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer):
-#     discriminator.train()
-#     generator.train()
-#     dis_loss_epoch = 0
-#     gen_loss_epoch = 0
-
-#     for idx, (input, target) in enumerate(train_loader):
-
-#         # Train Generator
-
-#         gen_optimizer.zero_grad()
-#         input = input.to(device)
-#         target = target.to(device)
-
-#         noise = torch.randn(input.size(), device=device)
-#         fake_specs = generator(torch.cat([input, noise], dim=1))
-#         pred_fake = discriminator(fake_specs, input)
-#         gen_loss = hinge_loss_gen(pred_fake)
-
-#         gen_loss.backward()
-
-#         gen_optimizer.step()
-
-#         # Train Discriminator
-
-#         dis_optimizer.zero_grad()
-
-#         pred_real = discriminator(target, input)
-#         pred_fake = discriminator(fake_specs.detach(), input)
-
-#         dis_loss = hinge_loss_dis(pred_real, pred_fake)
-
-#         dis_loss.backward()
-#         dis_optimizer.step()
-
-#         dis_loss_epoch += dis_loss.item()
-#         gen_loss_epoch += gen_loss.item()
-
-#         if idx % 50 == 0:
-#             print(
-#                 f"Step[{idx}/{len(train_loader)}] Loss D: {dis_loss.item()}, Loss G: {gen_loss.item()}"
-#             )
-
-#     return dis_loss_epoch, gen_loss_epoch
-
 def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer):
     discriminator.train()
     generator.train()
@@ -95,33 +50,34 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
 
     for idx, (input, target) in enumerate(train_loader):
 
-        dis_optimizer.zero_grad()
+        # Train Generator
+
+        gen_optimizer.zero_grad()
         input = input.to(device)
         target = target.to(device)
 
-        # Real spectrogram
-        target.requires_grad_(True)
-        dis_real_output = discriminator(input, target)  # target is spectrogram
-
-        # Fake spectrogram
         noise = torch.randn(input.size(), device=device)
-        fake_spec = generator(torch.cat([input, noise], dim=1))
-        dis_fake_output = discriminator(input, fake_spec.detach())
+        fake_specs = generator(torch.cat([input, noise], dim=1))
+        pred_fake = discriminator(fake_specs, input)
+        gen_loss = hinge_loss_gen(pred_fake)
 
-        dis_loss = hinge_loss_dis(dis_real_output, dis_fake_output)
-        gradient_penalty = compute_r1_penalty(dis_real_output, target, device)
+        gen_loss.backward()
+
+        gen_optimizer.step()
+
+        # Train Discriminator
+
+        dis_optimizer.zero_grad()
+        target.requires_grad_(True)
+        pred_real = discriminator(target, input)
+        pred_fake = discriminator(fake_specs.detach(), input)
+
+        dis_loss = hinge_loss_dis(pred_real, pred_fake)
+        gradient_penalty = compute_r1_penalty(pred_real, target, device)
         dis_loss += cfg['lambda'] * gradient_penalty
+
         dis_loss.backward()
         dis_optimizer.step()
-
-        # Train generator
-        gen_optimizer.zero_grad()
-        # noise = torch.randn(input.size(), device=device) 
-        fake_spec = generator(torch.cat([input, noise], dim=1))
-        gen_output = discriminator(input, fake_spec)
-        gen_loss = hinge_loss_gen(gen_output)
-        gen_loss.backward()
-        gen_optimizer.step()
 
         dis_loss_epoch += dis_loss.item()
         gen_loss_epoch += gen_loss.item()
@@ -132,6 +88,52 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
             )
 
     return dis_loss_epoch, gen_loss_epoch
+
+# def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer):
+#     discriminator.train()
+#     generator.train()
+#     dis_loss_epoch = 0
+#     gen_loss_epoch = 0
+
+#     for idx, (input, target) in enumerate(train_loader):
+
+#         dis_optimizer.zero_grad()
+#         input = input.to(device)
+#         target = target.to(device)
+
+#         # Real spectrogram
+#         target.requires_grad_(True)
+#         dis_real_output = discriminator(input, target)  # target is spectrogram
+
+#         # Fake spectrogram
+#         noise = torch.randn(input.size(), device=device)
+#         fake_spec = generator(torch.cat([input, noise], dim=1))
+#         dis_fake_output = discriminator(input, fake_spec.detach())
+
+#         dis_loss = hinge_loss_dis(dis_real_output, dis_fake_output)
+#         # gradient_penalty = compute_r1_penalty(dis_real_output, target, device)
+#         # dis_loss += cfg['lambda'] * gradient_penalty
+#         dis_loss.backward()
+#         dis_optimizer.step()
+
+#         # Train generator
+#         gen_optimizer.zero_grad()
+#         # noise = torch.randn(input.size(), device=device) 
+#         fake_spec = generator(torch.cat([input, noise], dim=1))
+#         gen_output = discriminator(input, fake_spec)
+#         gen_loss = hinge_loss_gen(gen_output)
+#         gen_loss.backward()
+#         gen_optimizer.step()
+
+#         dis_loss_epoch += dis_loss.item()
+#         gen_loss_epoch += gen_loss.item()
+
+#         if idx % 50 == 0:
+#             print(
+#                 f"Step[{idx}/{len(train_loader)}] Loss D: {dis_loss.item()}, Loss G: {gen_loss.item()}"
+#             )
+
+#     return dis_loss_epoch, gen_loss_epoch
 
 def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='data/generated_samples'):
     # val_loader contains single batch
