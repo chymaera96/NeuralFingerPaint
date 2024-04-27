@@ -50,7 +50,7 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
 
     for idx, (input, target) in enumerate(train_loader):
 
-        # Train Discriminator
+        # Train Generator
 
         gen_optimizer.zero_grad()
         input = input.to(device)
@@ -65,7 +65,7 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
 
         gen_optimizer.step()
 
-        # Train Generator
+        # Train Discriminator
 
         dis_optimizer.zero_grad()
 

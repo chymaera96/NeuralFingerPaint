@@ -57,7 +57,7 @@ class FPaintDataset(Dataset):
                 self.ignore_idx.append(idx)
                 return self[idx+1]
         else:
-            start = 2.0 * self.sample_rate # Arbitrary start point for validation
+            start = int(2.0 * self.sample_rate) # Arbitrary start point for validation
 
         audio = audio[start:start+clip_frames]
 
