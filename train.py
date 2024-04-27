@@ -143,9 +143,9 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             noise = torch.randn(input.size(), device=device)
             fake_spec = generator(torch.cat([input, noise], dim=1))
             fake_spec = fake_spec.squeeze(0).squeeze().cpu().numpy()
-            spec_min = spec_min.cpu().numpy()
-            spec_max = spec_max.cpu().numpy()
-            print(spec_min, spec_max)
+            spec_min = spec_min.cpu().numpy()[0]
+            spec_max = spec_max.cpu().numpy()[0]
+            # print(spec_min, spec_max)
             fake_spec = fake_spec[:252, :]
             fake_spec = fake_spec * (spec_max - spec_min) + spec_min
             assert fake_spec.shape == (252, cfg['n_frames']), f"Expected shape (252, {cfg['n_frames']}), but got {fake_spec.shape}"
@@ -161,6 +161,7 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             # Save audio
             fake_audio = librosa.griffinlim_cqt(fake_spec, sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
             save_name = save_name.replace('.png', '.wav')
+            sf.write(save_name, fake_audio, cfg['fs'])
             break
 
 
@@ -220,10 +221,10 @@ def main():
 
     for epoch in range(start_epoch+1, num_epochs+1):
         print("#######Epoch {}#######".format(epoch))
-        # dis_loss_epoch, gen_loss_epoch = train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer)
+        dis_loss_epoch, gen_loss_epoch = train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimizer)
         if epoch % 5 == 0:
             save_generated_samples(cfg, generator, val_loader, ckp=args.ckp, epoch=epoch)
-        return
+        # return
         writer.add_scalar("Discriminator Loss", dis_loss_epoch, epoch)
         writer.add_scalar("Generator Loss", gen_loss_epoch, epoch)
         dis_loss_log.append(dis_loss_epoch)
