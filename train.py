@@ -55,12 +55,12 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
         target = target.to(device)
 
         # Real spectrogram
-        dis_real_output = discriminator(input, target)  # target is spectrogram
+        dis_real_output = discriminator(target)  # target is spectrogram
 
         # Fake spectrogram
         noise = torch.randn(input.size(), device=device)
         fake_spec = generator(torch.cat([input, noise], dim=1))
-        dis_fake_output = discriminator(input, fake_spec.detach())
+        dis_fake_output = discriminator(fake_spec.detach())
 
         dis_loss = hinge_loss_dis(dis_real_output, dis_fake_output)
         gradient_penalty = compute_r1_penalty(dis_real_output, target, device)
@@ -72,7 +72,7 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
         gen_optimizer.zero_grad()
         noise = torch.randn(input.size(), device=device) 
         fake_spec = generator(torch.cat([input, noise], dim=1))
-        gen_output = discriminator(input, fake_spec)
+        gen_output = discriminator(fake_spec)
         gen_loss = hinge_loss_gen(gen_output)
         gen_loss.backward()
         gen_optimizer.step()

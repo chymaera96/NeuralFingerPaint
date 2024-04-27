@@ -79,7 +79,7 @@ class Generator(nn.Module):
 class Discriminator(nn.Module):
     def __init__(self, d=32):
         super(Discriminator, self).__init__()
-        self.conv1 = nn.utils.spectral_norm(nn.Conv2d(2, d, 4, 2, 1))
+        self.conv1 = nn.utils.spectral_norm(nn.Conv2d(1, d, 4, 2, 1))
         self.conv2 = nn.utils.spectral_norm(nn.Conv2d(d, d * 2, 4, 2, 1))
         self.conv3 = nn.utils.spectral_norm(nn.Conv2d(d * 2, d * 4, 4, 2, 1))
         self.conv4 = nn.utils.spectral_norm(nn.Conv2d(d * 4, d * 8, 4, 2, 1))
@@ -98,8 +98,9 @@ class Discriminator(nn.Module):
             normal_init(self._modules[m], mean, std)
 
     # forward method
-    def forward(self, input, label):
-        x = torch.cat([input, label], 1)
+    def forward(self, label):
+        # x = torch.cat([input, label], 1)
+        x = label
         x = F.leaky_relu(self.conv1(x), 0.2)
         x = F.leaky_relu(self.conv2(x), 0.2)
         x = F.leaky_relu(self.conv3(x), 0.2)
