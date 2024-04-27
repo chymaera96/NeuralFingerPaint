@@ -142,6 +142,8 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             noise = torch.randn(input.size(), device=device)
             fake_spec = generator(torch.cat([input, noise], dim=1))
             fake_spec = fake_spec.squeeze(0).cpu().numpy()
+            spec_min = spec_min.cpu().numpy()
+            spec_max = spec_max.cpu().numpy()
             fake_spec = fake_spec * (spec_max - spec_min) + spec_min
             fake_spec = fake_spec[:252, :]
 
