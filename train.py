@@ -53,6 +53,8 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
         dis_optimizer.zero_grad()
         input = input.to(device)
         target = target.to(device)
+        target.requires_grad_(True)
+
 
         # Real spectrogram
         dis_real_output = discriminator(target)  # target is spectrogram
