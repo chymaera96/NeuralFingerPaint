@@ -111,8 +111,9 @@ def count_parameters(model, encoder):
         f.write(str(table))
     return total_params
 
-def compute_r1_penalty(real_output, real_images):
-    real_grad_out = torch.ones_like(real_output)
+
+def compute_r1_penalty(real_output, real_images, device):
+    real_grad_out = torch.ones_like(real_output, device=device)
     real_grad = torch.autograd.grad(
         outputs=real_output,
         inputs=real_images,
