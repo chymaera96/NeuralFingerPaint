@@ -78,6 +78,13 @@ class FPaintDataset(Dataset):
                            hop_length=self.hop_len, 
                            n_bins=self.cfg['n_bins'], 
                            bins_per_octave=36))
+
+        # spec_dB = librosa.amplitude_to_db(spec, ref=np.max)
+
+        # Min max normalization
+        spec_min = np.min(spec)
+        spec_max = np.max(spec)
+        spec = (spec - spec_min) / (spec_max - spec_min)
         
         # Pad to 256 frequency bins
         if spec.shape[0] < 256:
@@ -100,13 +107,14 @@ class FPaintDataset(Dataset):
 
         assert spec.shape == (256, self.n_frames), f"Expected shape (256, {self.n_frames}), but got {spec.shape}"
             
-        target = torch.from_numpy(librosa.amplitude_to_db(spec)).unsqueeze(0).float()
+        # target = torch.from_numpy(librosa.amplitude_to_db(spec)).unsqueeze(0).float()
+        target = torch.from_numpy(spec).unsqueeze(0).float()
         peaks = torch.from_numpy(peaks).unsqueeze(0).float()
 
         if self.train:
             return peaks, target
         else:
-            return peaks, datapath  
+            return peaks, spec_min, spec_max, datapath  
 
     def __len__(self):
         return len(self.filenames)

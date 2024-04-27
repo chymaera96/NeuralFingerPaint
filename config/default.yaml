@@ -15,7 +15,7 @@ n_fft: 512
 n_bins: 252
 hpf_pole: 0.98  # spectrogram enhancement
 density: 1000.0
-f_sd : 15.0   # how wide to spreak peaks
+f_sd : 3.0   # how wide to spreak peaks
 maxpksperframe: 128  # maximum number of peaks per frame
 oversamp: 1  # oversample factor for peak detection
 n_frames: 512

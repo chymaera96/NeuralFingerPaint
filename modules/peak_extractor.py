@@ -193,7 +193,8 @@ class Analyzer(object):
             sgram = np.abs(librosa.stft(y=d, n_fft=self.n_fft,
                                     hop_length=self.n_hop,
                                     window=mywin))
-        logmelspec = librosa.amplitude_to_db(sgram, ref=np.max)
+        # spec = librosa.amplitude_to_db(sgram, ref=np.max)
+        spec = sgram
         # masking envelope decay constant
         a_dec = (1 - 0.01 * (self.density * np.sqrt(self.n_hop / 352.8) / 35)) ** (1 / self.oversamp)
 
@@ -222,7 +223,10 @@ class Analyzer(object):
         if list:
             for col in range(scols):
                 for bin_ in np.nonzero(peaks[:, col])[0]:
-                    amp = logmelspec[bin_, col]
+                    amp = spec[bin_, col]
                     pklist.append([col/sgram.shape[1], bin_/sgram.shape[0], amp])
+
+        masked_peaks = peaks * spec
+        # masked_peaks[masked_peaks == 0.0] = -80.0
                 
-        return peaks, np.array(pklist)
+        return masked_peaks, np.array(pklist)

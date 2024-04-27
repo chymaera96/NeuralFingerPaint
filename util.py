@@ -112,17 +112,9 @@ def count_parameters(model, encoder):
     return total_params
 
 
-def compute_r1_penalty(real_output, real_images, device):
-    real_grad_out = torch.ones_like(real_output, device=device)
-    real_grad = torch.autograd.grad(
-        outputs=real_output,
-        inputs=real_images,
-        grad_outputs=real_grad_out,
-        create_graph=True,
-        retain_graph=True,
-        only_inputs=True,
-    )[0]
-    r1_penalty = torch.sum(real_grad.pow(2), dim=[1, 2, 3])
+def compute_r1_penalty(dis_real_output, target, device):
+    real_grad = torch.autograd.grad(dis_real_output.sum(), target, create_graph=True)[0]
+    r1_penalty = real_grad.pow(2).reshape(target.shape[0], -1).sum(-1).mean()
     return r1_penalty
 
 def main():

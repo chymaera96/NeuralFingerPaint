@@ -100,6 +100,7 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
         target = target.to(device)
 
         # Real spectrogram
+        target.requires_grad_(True)
         dis_real_output = discriminator(input, target)  # target is spectrogram
 
         # Fake spectrogram
@@ -108,8 +109,8 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
         dis_fake_output = discriminator(input, fake_spec.detach())
 
         dis_loss = hinge_loss_dis(dis_real_output, dis_fake_output)
-        # gradient_penalty = compute_r1_penalty(dis_real_output, target, device)
-        # dis_loss += cfg['lambda'] * gradient_penalty
+        gradient_penalty = compute_r1_penalty(dis_real_output, target, device)
+        dis_loss += cfg['lambda'] * gradient_penalty
         dis_loss.backward()
         dis_optimizer.step()
 
@@ -132,67 +133,31 @@ def train(cfg, train_loader, discriminator, generator, dis_optimizer, gen_optimi
 
     return dis_loss_epoch, gen_loss_epoch
 
-
 def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='data/generated_samples'):
-    generator.eval()  # Set the generator to evaluation mode
-    if not os.path.exists(f'{save_path}'):
-        os.mkdir(f'{save_path}')
-    # Load samples from val_loader
-    input, path = next(iter(val_loader))
-    input = input.to(device)
-
+    # val_loader contains single batch
+    generator.eval()
     with torch.no_grad():
-        # Generate fake spectrograms
-        noise = torch.randn(input.size(), device=device)
-        fake_specs = generator(torch.cat([input, noise], dim=1))
+        for idx, (input, spec_min, spec_max, datapath) in enumerate(val_loader):
+            input = input.to(device)
+            noise = torch.randn(input.size(), device=device)
+            fake_spec = generator(torch.cat([input, noise], dim=1))
+            fake_spec = fake_spec.squeeze(0).cpu().numpy()
+            fake_spec = fake_spec * (spec_max - spec_min) + spec_min
+            fake_spec = fake_spec[:252, :]
 
-    # Copy audio files to save_path
-    for i, p in enumerate(path):
-        audio_path = f'{save_path}/{p.split("/")[-1]}'
-        if not os.path.exists(audio_path):
-            shutil.copy(p, audio_path)
+            # Save generated spectrogram
+            save_path = os.path.join(save_path, ckp)
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+            save_name = f"{datapath[0].split('/')[-1].split('.')[0]}_{epoch}.png"
+            save_name = os.path.join(save_path, save_name)
+            plt.imsave(save_name, fake_spec, cmap='viridis', origin='lower')
+            print(f"Saved {save_name}")
 
-    # Reconstruct audio from spectrograms using Griffin-Lim algorithm
-    reconstructed_audios = []
-    for fake_spec in fake_specs:
-        fake_spec = fake_spec.squeeze().detach().cpu().numpy()
-        assert len(fake_spec.shape) == 2, f"Expected 2D spectrogram, but got {fake_spec.shape}"
-        # if fake_spec.shape[0] == cfg['n_fft'] // 2 + 1:
-        #     fake_spec = fake_spec[:-1, :]
-        fake_spec = fake_spec[:252, :] # Remove extra bins for CQT
-        fake_audio = librosa.griffinlim_cqt(fake_spec, sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
-        reconstructed_audios.append(fake_audio)
-
-    # Save generated audio files
-    for i, audio in enumerate(reconstructed_audios):
-        fname = path[0].split('/')[-1]
-        audio_path = f'{save_path}/audio_model_{ckp}_epoch_{epoch}_sample_{fname}.wav'
-        sf.write(audio_path, audio, cfg['fs'])
-        # save spectrogram
-        spec_path = f'{save_path}/spec_model_{ckp}_epoch_{epoch}_sample_{fname}.png'
-        # Save librosa specshow cqt spectrogram
-        plt.figure(figsize=(10, 4))
-        librosa.display.specshow(librosa.amplitude_to_db(fake_specs[i].squeeze().detach().cpu().numpy()), sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
-        plt.colorbar(format='%+2.0f dB')
-        plt.title('Generated Spectrogram')
-        plt.savefig(spec_path)
-        plt.close()
-
-        # if epoch == 5:
-        #     # Save input spectrogram
-        #     input_spec_path = f'{save_path}/input_spec_sample_{fname}.png'
-        #     plt.figure(figsize=(10, 4))
-        #     librosa.display.specshow(input.squeeze().detach().cpu().numpy(), sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
-        #     plt.colorbar(format='%+2.0f dB')
-        #     plt.title('Peak Map')
-        #     plt.savefig(spec_path)
-        #     plt.close()
-
-    generator.train()  # Set the generator back to training mode
-
-# def save_generated_samples(cfg, generator, ckp, epoch, save_path='data/generated_samples'):
-
-#     fpath = '/import/c4dm-datasets/MAPS_working/MAPS/AkPnBcht/MUS/MAPS_MUS-chpn-p1_AkPnBcht.wav'
+            # Save audio
+            fake_audio = librosa.griffinlim_cqt(fake_spec, sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
+            save_name = save_name.replace('.png', '.wav')
+            break
 
 
 def main():
