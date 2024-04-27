@@ -139,6 +139,8 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
     with torch.no_grad():
         for idx, (input, spec_min, spec_max, datapath) in enumerate(val_loader):
             input = input.to(device)
+            spec_min = spec_min.to(device)
+            spec_max = spec_max.to(device)
             noise = torch.randn(input.size(), device=device)
             fake_spec = generator(torch.cat([input, noise], dim=1))
             fake_spec = fake_spec * (spec_max - spec_min) + spec_min
