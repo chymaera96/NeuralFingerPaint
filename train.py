@@ -150,7 +150,6 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             # print(spec_min, spec_max)
             fake_spec = fake_spec[:252, :]
             fake_spec = fake_spec * (spec_max - spec_min) + spec_min
-            fake_spec = librosa.db_to_amplitude(fake_spec)
             assert fake_spec.shape == (252, cfg['n_frames']), f"Expected shape (252, {cfg['n_frames']}), but got {fake_spec.shape}"
             # Save generated spectrogram
             save_path = os.path.join(save_path, ckp)
@@ -162,6 +161,7 @@ def save_generated_samples(cfg, generator, val_loader, ckp, epoch, save_path='da
             print(f"Saved {save_name}")
 
             # Save audio
+            fake_spec = librosa.db_to_amplitude(fake_spec)
             fake_audio = librosa.griffinlim_cqt(fake_spec, sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
             save_name = save_name.replace('.png', '.wav')
             sf.write(save_name, fake_audio, cfg['fs'])
