@@ -24,11 +24,6 @@ def generate_audio(cfg, model, audio, device='cuda'):
     spec_max = np.max(spec_dB)
     spec_dB = (spec_dB - spec_min) / (spec_max - spec_min)
 
-    # Min max normalization
-    spec_min = np.min(spec_dB)
-    spec_max = np.max(spec_dB)
-    spec_dB = (spec_dB - spec_min) / (spec_max - spec_min)
-    
     # Pad to 256 frequency bins
     if spec.shape[0] < 256:
         pad = np.zeros((256 - spec.shape[0], spec.shape[1]))
