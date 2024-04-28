@@ -57,7 +57,7 @@ def generate_audio(cfg, model, audio, device='cuda'):
     noise = torch.randn(peaks.size(), device=device)
 
     with torch.no_grad():
-        output = model(torch.cat([input, noise], dim=1))
+        output = model(torch.cat([peaks, noise], dim=1))
         output = output.squeeze(0).squeeze(0).cpu().numpy()
         output = output[:252, :]
         output = output * (spec_max - spec_min) + spec_min
