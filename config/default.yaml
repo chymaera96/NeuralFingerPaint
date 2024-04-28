@@ -27,7 +27,7 @@ lambda: 0.01  # weight for the R1 penalty
 train_sz: 2700
 val_sz: 50
 bsz_train: 16
-d_lr: 8.0e-4
-g_lr: 8.0e-4
+d_lr: 1.0e-4
+g_lr: 4.0e-4
 n_epochs: 100
 
