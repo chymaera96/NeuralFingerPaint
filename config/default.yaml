@@ -14,9 +14,9 @@ hop_len: 128
 n_fft: 512
 n_bins: 252
 hpf_pole: 0.98  # spectrogram enhancement
-density: 20.0
+density: 250.0
 f_sd : 3.0   # how wide to spreak peaks
-maxpksperframe: 64  # maximum number of peaks per frame
+maxpksperframe: 128  # maximum number of peaks per frame
 oversamp: 1  # oversample factor for peak detection
 n_frames: 512
 silence: 0.0005  # silence threshold
