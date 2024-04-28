@@ -226,7 +226,7 @@ class Analyzer(object):
                     amp = spec[bin_, col]
                     pklist.append([col/sgram.shape[1], bin_/sgram.shape[0], amp])
 
-        masked_peaks = peaks * spec
+        # masked_peaks = peaks * spec
         # masked_peaks[masked_peaks == 0.0] = -80.0
                 
-        return masked_peaks, np.array(pklist)
+        return peaks, np.array(pklist)

@@ -79,36 +79,40 @@ class FPaintDataset(Dataset):
                            n_bins=self.cfg['n_bins'], 
                            bins_per_octave=36))
 
-        # spec_dB = librosa.amplitude_to_db(spec, ref=np.max)
+        spec_dB = librosa.amplitude_to_db(spec, ref=np.max)
 
         # Min max normalization
-        spec_min = np.min(spec)
-        spec_max = np.max(spec)
-        spec = (spec - spec_min) / (spec_max - spec_min)
+        spec_min = np.min(spec_dB)
+        spec_max = np.max(spec_dB)
+        spec_dB = (spec_dB - spec_min) / (spec_max - spec_min)
         
         # Pad to 256 frequency bins
         if spec.shape[0] < 256:
             pad = np.zeros((256 - spec.shape[0], spec.shape[1]))
             spec = np.concatenate([spec, pad], axis=0)
+            spec_dB = np.concatenate([spec_dB, pad], axis=0)
 
         # Pad to n_frames
         if spec.shape[1] < self.n_frames:
             pad = np.zeros((spec.shape[0], self.n_frames - spec.shape[1]))
             spec = np.concatenate([spec, pad], axis=1)
+            spec_dB = np.concatenate([spec_dB, pad], axis=1)
         elif spec.shape[1] > self.n_frames:
             spec = spec[:, :self.n_frames]
+            spec_dB = spec_dB[:, :self.n_frames]
 
         # Peak-picking
         analyzer = Analyzer(cfg=self.cfg)
-        peaks, _ = analyzer.find_peaks(sgram=spec, backward=False)
+        mask, _ = analyzer.find_peaks(sgram=spec, backward=False)
+        peaks = mask * spec_dB
 
         if self.transform is not None:
-            spec = self.transform(spec)
+            spec_dB = self.transform(spec_dB)
 
-        assert spec.shape == (256, self.n_frames), f"Expected shape (256, {self.n_frames}), but got {spec.shape}"
+        assert spec_dB.shape == (256, self.n_frames), f"Expected shape (256, {self.n_frames}), but got {spec.shape}"
             
         # target = torch.from_numpy(librosa.amplitude_to_db(spec)).unsqueeze(0).float()
-        target = torch.from_numpy(spec).unsqueeze(0).float()
+        target = torch.from_numpy(spec_dB).unsqueeze(0).float()
         peaks = torch.from_numpy(peaks).unsqueeze(0).float()
 
         if self.train:

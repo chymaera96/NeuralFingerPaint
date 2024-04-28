@@ -14,13 +14,13 @@ hop_len: 128
 n_fft: 512
 n_bins: 252
 hpf_pole: 0.98  # spectrogram enhancement
-density: 200.0
+density: 50.0
 f_sd : 3.0   # how wide to spreak peaks
-maxpksperframe: 128  # maximum number of peaks per frame
+maxpksperframe: 64  # maximum number of peaks per frame
 oversamp: 1  # oversample factor for peak detection
 n_frames: 512
 silence: 0.0005  # silence threshold
-lambda: 0.02  # weight for the R1 penalty
+lambda: 0.01  # weight for the R1 penalty
 
 
 # Dataset and Model hyperparameters
