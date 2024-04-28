@@ -20,7 +20,7 @@ maxpksperframe: 252  # maximum number of peaks per frame
 oversamp: 1  # oversample factor for peak detection
 n_frames: 512
 silence: 0.0005  # silence threshold
-lambda: 0.01  # weight for the R1 penalty
+lambda: 0.3  # weight for the R1 penalty
 
 
 # Dataset and Model hyperparameters
