@@ -3,7 +3,7 @@ import torch
 import argparse
 from scipy import linalg
 
-from modules.generator import Generator
+from src.pix2pixGAN import Generator
 from modules.data import load_data
 from util import load_config, load_ckp
 from modules.data import FPaintDataset
@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description='Neural Fingerpaint FAD Evaluation'
 parser.add_argument('--config', default='config/default.yaml', type=str,
                     help='Path to config file')
 parser.add_argument('--ckp', default='test', type=str,
-                    help='checkpoint_name')
+                    help='path to checkpoint')
 
 def eval_fad(cfg, model, data, device):
     model.eval()
