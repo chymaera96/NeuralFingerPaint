@@ -44,12 +44,17 @@ def compute_fad(fake, real, eps=1e-6):
     fad = diff.dot(diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * tr_covmean
     return fad
 
-def torch_cov(m, y=None, rowvar=False):
+def torch_cov(m, y=None, rowvar=False, chunk_size=100):
     if y is not None:
         m = torch.cat((m, y), dim=0)
+    if not rowvar:
+        m = m.t()
     m_exp = torch.mean(m, dim=0)
     x = m - m_exp
-    cov = 1 / (x.size(0) - 1) * x.t().mm(x)
+    cov = torch.zeros((x.size(1), x.size(1)), device=x.device)
+    for i in range(0, x.size(0), chunk_size):
+        batch = x[i:i+chunk_size]
+        cov += 1 / (x.size(0) - 1) * batch.t().mm(batch)
     return cov
 
 def sqrtm(matrix):
@@ -66,7 +71,7 @@ def main():
     print("Loading dataset...")
     val_dataset = FPaintDataset(cfg=cfg, path=val_dir, train=True, mode="valid")
     val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=2, shuffle=True,
+        val_dataset, batch_size=1, shuffle=True,
         num_workers=8, pin_memory=True, drop_last=True)
 
     # Load model
