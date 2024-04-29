@@ -33,29 +33,39 @@ def eval_fad(cfg, model, data, device):
     return fad
 
 def compute_fad(fake, real, eps=1e-6):
-    fake = fake.detach().cpu().numpy()
-    real = real.detach().cpu().numpy()
-    fake = fake.reshape(fake.shape[0], -1)
-    real = real.reshape(real.shape[0], -1)
-    mu1 = np.mean(fake, axis=0)
-    mu2 = np.mean(real, axis=0)
-    sigma1 = np.cov(fake, rowvar=False)
-    sigma2 = np.cov(real, rowvar=False)
+    fake = fake.view(fake.shape[0], -1)
+    real = real.view(real.shape[0], -1)
+    mu1 = torch.mean(fake, dim=0)
+    mu2 = torch.mean(real, dim=0)
+    sigma1 = torch_cov(fake, rowvar=False, compute_full=False)
+    sigma2 = torch_cov(real, rowvar=False, compute_full=False)
     diff = mu1 - mu2
-    covmean, _ = linalg.sqrtm(sigma1.dot(sigma2), disp=False)
-    if not np.isfinite(covmean).all():
+    tr_covmean = sqrtm(sigma1 * sigma2)
+    if not torch.isfinite(tr_covmean).all():
         msg = f"fid calculation produces singular product; adding {eps} to diagonal of cov estimates"
         print(msg)
-        offset = np.eye(sigma1.shape[0]) * eps
-        covmean = linalg.sqrtm((sigma1 + offset).dot(sigma2 + offset))
-    if np.iscomplexobj(covmean):
-        if not np.allclose(np.diagonal(covmean).imag, 0, atol=1e-3):
-            m = np.max(np.abs(covmean.imag))
-            raise ValueError(f"Imaginary component {m}")
-        covmean = covmean.real
-    fad = diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * np.trace(covmean)
+        offset = torch.eye(sigma1.shape[0]).to(fake.device) * eps
+        tr_covmean = sqrtm((sigma1 + offset) * (sigma2 + offset))
+    fad = diff.dot(diff) + sigma1 + sigma2 - 2 * tr_covmean
     return fad
 
+
+def torch_cov(m, y=None, rowvar=False, compute_full=True):
+    if y is not None:
+        m = torch.cat((m, y), dim=0)
+    m_exp = torch.mean(m, dim=0)
+    x = m - m_exp
+    if compute_full:
+        cov = 1 / (x.size(0) - 1) * x.t().mm(x)
+    else:
+        cov = torch.mean(x ** 2, dim=0) - m_exp ** 2
+    return cov
+
+def sqrtm(matrix):
+    # This function is not available in PyTorch, so we need to implement it ourselves
+    # Here we use the method described in https://github.com/msubhransu/matrix-sqrt
+    _, s, v = torch.svd(matrix)
+    return v.mm(torch.diag(s.sqrt())).mm(v.t())
 
 def main():
     args = parser.parse_args()
@@ -63,9 +73,9 @@ def main():
     train_dir = cfg['train_dir']
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print("Loading dataset...")
-    train_dataset = FPaintDataset(cfg=cfg, path=train_dir, train=True)
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=16, shuffle=True,
+    val_dataset = FPaintDataset(cfg=cfg, path=valid_dir, train=True)
+    val_loader = torch.utils.data.DataLoader(
+        val_dataset, batch_size=2, shuffle=True,
         num_workers=8, pin_memory=True, drop_last=True)
 
     # Load model
@@ -75,7 +85,7 @@ def main():
     model.load_state_dict(checkpoint['gen_state_dict'])
 
     # Evaluate
-    fad = eval_fad(cfg, model, train_loader, device)
+    fad = eval_fad(cfg, model, val_loader, device)
     print(f"FAD: {fad}")
 
 
