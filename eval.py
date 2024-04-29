@@ -34,6 +34,9 @@ def eval_fd(cfg, model, data, device, measure='FID'):
             noise = torch.randn(input.size(), device=device)
             fake_spec = model(torch.cat([input, noise], dim=1))
             if measure == 'FID':
+                # Normalize fake and target to [0, 1]
+                fake_spec = (fake_spec - fake_spec.min()) / (fake_spec.max() - fake_spec.min())
+                target = (target - target.min()) / (target.max() - target.min())
                 # Copy channel to 3 channels
                 fake_spec = torch.cat([fake_spec, fake_spec, fake_spec], dim=1)
                 target = torch.cat([target, target, target], dim=1)
