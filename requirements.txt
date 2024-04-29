@@ -2,4 +2,5 @@ librosa
 soundfile
 matplotlib
 tensorboard
-torcheval
+--pre torcheval-nightly
+scikit-image
