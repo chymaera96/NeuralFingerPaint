@@ -19,7 +19,7 @@ def eval_fad(cfg, model, data, device):
     fad = 0
     n = 0
     for idx, (input, target) in enumerate(data):
-        if idx % 50 == 0:
+        if idx % 10 == 0:
             print(f"Step[{idx}/{len(data)}]")
         input = input.to(device)
         target = target.to(device)
@@ -33,28 +33,40 @@ def eval_fad(cfg, model, data, device):
     return fad
 
 def compute_fad(fake, real, eps=1e-6):
-    fake = fake.detach().cpu().numpy()
-    real = real.detach().cpu().numpy()
-    fake = fake.reshape(fake.shape[0], -1)
-    real = real.reshape(real.shape[0], -1)
-    mu1 = np.mean(fake, axis=0)
-    mu2 = np.mean(real, axis=0)
-    sigma1 = np.cov(fake, rowvar=False)
-    sigma2 = np.cov(real, rowvar=False)
+    fake = fake.view(fake.shape[0], -1)
+    real = real.view(real.shape[0], -1)
+    mu1 = torch.mean(fake, dim=0)
+    mu2 = torch.mean(real, dim=0)
+    sigma1 = torch_cov(fake)
+    sigma2 = torch_cov(real)
     diff = mu1 - mu2
-    covmean, _ = linalg.sqrtm(sigma1.dot(sigma2), disp=False)
-    if not np.isfinite(covmean).all():
+    covmean = sqrtm(sigma1.mm(sigma2))
+    if not torch.isfinite(covmean).all():
         msg = f"fid calculation produces singular product; adding {eps} to diagonal of cov estimates"
         print(msg)
-        offset = np.eye(sigma1.shape[0]) * eps
-        covmean = linalg.sqrtm((sigma1 + offset).dot(sigma2 + offset))
-    if np.iscomplexobj(covmean):
-        if not np.allclose(np.diagonal(covmean).imag, 0, atol=1e-3):
-            m = np.max(np.abs(covmean.imag))
+        offset = torch.eye(sigma1.shape[0]).to(fake.device) * eps
+        covmean = sqrtm((sigma1 + offset).mm(sigma2 + offset))
+    if torch.is_complex(covmean):
+        if not torch.allclose(covmean.diag().imag, torch.zeros_like(covmean.diag().imag), atol=1e-3):
+            m = torch.max(torch.abs(covmean.imag))
             raise ValueError(f"Imaginary component {m}")
         covmean = covmean.real
-    fad = diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * np.trace(covmean)
+    fad = diff.dot(diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * torch.trace(covmean)
     return fad
+
+def torch_cov(m, y=None):
+    if y is not None:
+        m = torch.cat((m, y), dim=0)
+    m_exp = torch.mean(m, dim=0)
+    x = m - m_exp
+    cov = 1 / (x.size(0) - 1) * x.t().mm(x)
+    return cov
+
+def sqrtm(matrix):
+    # This function is not available in PyTorch, so we need to implement it ourselves
+    # Here we use the method described in https://github.com/msubhransu/matrix-sqrt
+    _, s, v = torch.svd(matrix)
+    return v.mm(torch.diag(s.sqrt())).mm(v.t())
 
 
 def main():
