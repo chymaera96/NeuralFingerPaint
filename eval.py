@@ -76,3 +76,7 @@ def main():
     # Evaluate
     fad = eval_fad(cfg['gen'], model, train_loader, device)
     print(f"FAD: {fad}")
+
+
+if __name__ == '__main__':
+    main()
