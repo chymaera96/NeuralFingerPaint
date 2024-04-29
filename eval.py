@@ -34,6 +34,9 @@ def eval_fd(cfg, model, data, device, measure='FID'):
             noise = torch.randn(input.size(), device=device)
             fake_spec = model(torch.cat([input, noise], dim=1))
             if measure == 'FID':
+                # Copy channel to 3 channels
+                fake_spec = torch.cat([fake_spec, fake_spec, fake_spec], dim=1)
+                target = torch.cat([target, target, target], dim=1)
                 fid.update(fake_spec, target)  # Update FID with new samples
             else:
                 fad += compute_fad(fake_spec, target)
