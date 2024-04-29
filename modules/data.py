@@ -13,7 +13,7 @@ from util import load_index, qtile_normalize
 from modules.peak_extractor import Analyzer
 
 class FPaintDataset(Dataset):
-    def __init__(self, cfg, path, transform=None, train=False):
+    def __init__(self, cfg, path, transform=None, train=False, mode=None):
         self.path = path
         self.transform = transform
         self.train = train
@@ -27,10 +27,13 @@ class FPaintDataset(Dataset):
         self.n_frames = cfg['n_frames']
         self.silence = cfg['silence']
         self.size = cfg['train_sz'] if train else cfg['val_sz']
-        if train:
-            self.filenames = load_index(cfg, path, mode="train")
+        if mode is None:
+            if train:
+                self.filenames = load_index(cfg, path, mode="train")
+            else:
+                self.filenames = load_index(cfg, path, mode="valid")
         else:
-            self.filenames = load_index(cfg, path, mode="valid")
+            self.filenames = load_index(cfg, path, mode=mode)
         self.ignore_idx = []
 
     def __getitem__(self, idx):

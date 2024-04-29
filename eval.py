@@ -37,28 +37,19 @@ def compute_fad(fake, real, eps=1e-6):
     real = real.view(real.shape[0], -1)
     mu1 = torch.mean(fake, dim=0)
     mu2 = torch.mean(real, dim=0)
-    sigma1 = torch_cov(fake, rowvar=False, compute_full=False)
-    sigma2 = torch_cov(real, rowvar=False, compute_full=False)
+    sigma1 = torch_cov(fake, rowvar=False)
+    sigma2 = torch_cov(real, rowvar=False)
     diff = mu1 - mu2
-    tr_covmean = sqrtm(sigma1 * sigma2)
-    if not torch.isfinite(tr_covmean).all():
-        msg = f"fid calculation produces singular product; adding {eps} to diagonal of cov estimates"
-        print(msg)
-        offset = torch.eye(sigma1.shape[0]).to(fake.device) * eps
-        tr_covmean = sqrtm((sigma1 + offset) * (sigma2 + offset))
-    fad = diff.dot(diff) + sigma1 + sigma2 - 2 * tr_covmean
+    tr_covmean = torch.trace(sqrtm(sigma1.mm(sigma2) + eps * torch.eye(sigma1.size(0)).to(fake.device)))
+    fad = diff.dot(diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * tr_covmean
     return fad
 
-
-def torch_cov(m, y=None, rowvar=False, compute_full=True):
+def torch_cov(m, y=None, rowvar=False):
     if y is not None:
         m = torch.cat((m, y), dim=0)
     m_exp = torch.mean(m, dim=0)
     x = m - m_exp
-    if compute_full:
-        cov = 1 / (x.size(0) - 1) * x.t().mm(x)
-    else:
-        cov = torch.mean(x ** 2, dim=0) - m_exp ** 2
+    cov = 1 / (x.size(0) - 1) * x.t().mm(x)
     return cov
 
 def sqrtm(matrix):
@@ -73,7 +64,7 @@ def main():
     val_dir = cfg['val_dir']
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print("Loading dataset...")
-    val_dataset = FPaintDataset(cfg=cfg, path=val_dir, train=True)
+    val_dataset = FPaintDataset(cfg=cfg, path=val_dir, train=True, mode="valid")
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=2, shuffle=True,
         num_workers=8, pin_memory=True, drop_last=True)
