@@ -13,6 +13,8 @@ parser.add_argument('--config', default='config/default.yaml', type=str,
                     help='Path to config file')
 parser.add_argument('--ckp', default='test', type=str,
                     help='path to checkpoint')
+parser.add_argument('--density', default=None, type=float,    
+                    help='Density of the mask')
 
 def eval_fad(cfg, model, data, device):
     model.eval()
@@ -66,6 +68,8 @@ def sqrtm(matrix):
 def main():
     args = parser.parse_args()
     cfg = load_config(args.config)
+    if args.density is not None:
+        cfg['density'] = args.density
     val_dir = cfg['val_dir']
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print("Loading dataset...")
