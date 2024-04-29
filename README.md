@@ -1,5 +1,5 @@
 # NeuralFingerPaint
-Audio generation using CGAN conditioned on audio fingerprints
+Audio generation using CGAN conditioned on audio fingerprints.
 
 # Installation Guide
 
@@ -26,5 +26,5 @@ If required, adjust `config/default.yaml` according to required specfications. T
 ```
 python eval.py --ckp=CHECKPOINT_PATH --density=DENSITY --metric=EVAL_METRIC
 ```
-The density hyperparameter is an optional argument which offers some degree of control over the input condition. Choose the eval metric as `FID` (Frechet Inception Distance) or `FAD` (Frechet Audio Distance)/
+The density hyperparameter is an optional argument which offers some degree of control over the input condition. Choose the eval metric as `FID` (Frechet Inception Distance) or `FAD` (Frechet Audio Distance).
 
