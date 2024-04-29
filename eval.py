@@ -4,7 +4,6 @@ import argparse
 from scipy import linalg
 
 from src.pix2pixGAN import Generator
-from modules.data import load_data
 from util import load_config, load_ckp
 from modules.data import FPaintDataset
 
