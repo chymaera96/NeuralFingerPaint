@@ -70,7 +70,7 @@ def main():
     # Load model
     model = Generator()
     model = model.to(device)
-    checkpoint = torch.load(f'args.ckp', map_location=device)
+    checkpoint = torch.load(f'{args.ckp}', map_location=device)
     model.load_state_dict(checkpoint['gen_state_dict'])
 
     # Evaluate
