@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import argparse
 from scipy import linalg
-import torcheval.metrics.FrechetInceptionDistance as FID
+from torcheval.metrics import FrechetInceptionDistance as FID
 
 from src.pix2pixGAN import Generator
 from util import load_config, load_ckp
