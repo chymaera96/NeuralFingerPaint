@@ -24,7 +24,8 @@ def eval_fad(cfg, model, data, device):
         input = input.to(device)
         target = target.to(device)
         with torch.no_grad():
-            fake_spec = model(input)
+            noise = torch.randn(input.size(), device=device)
+            fake_spec = model(torch.cat([input, noise], dim=1))
         fad += compute_fad(fake_spec, target)
         n += 1
     fad /= n
@@ -74,7 +75,7 @@ def main():
     model.load_state_dict(checkpoint['gen_state_dict'])
 
     # Evaluate
-    fad = eval_fad(cfg['gen'], model, train_loader, device)
+    fad = eval_fad(cfg, model, train_loader, device)
     print(f"FAD: {fad}")
 
 
