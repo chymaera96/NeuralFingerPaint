@@ -1,13 +1,26 @@
 import numpy as np
 import torch
+import argparse
 from scipy import linalg
+
+from modules.generator import Generator
+from modules.data import load_data
+from util import load_config, load_ckp
+from modules.data import FPaintDataset
+
+
+parser = argparse.ArgumentParser(description='Neural Fingerpaint FAD Evaluation')
+parser.add_argument('--config', default='config/default.yaml', type=str,
+                    help='Path to config file')
+parser.add_argument('--ckp', default='test', type=str,
+                    help='checkpoint_name')
 
 def eval_fad(cfg, model, data, device):
     model.eval()
     fad = 0
     n = 0
     for idx, (input, target) in enumerate(data):
-        if idx % 100 == 0:
+        if idx % 50 == 0:
             print(f"Step[{idx}/{len(data)}]")
         input = input.to(device)
         target = target.to(device)
@@ -20,8 +33,8 @@ def eval_fad(cfg, model, data, device):
     return fad
 
 def compute_fad(fake, real, eps=1e-6):
-    fake = fake.cpu().numpy()
-    real = real.cpu().numpy()
+    fake = fake.detach().cpu().numpy()
+    real = real.detach().cpu().numpy()
     fake = fake.reshape(fake.shape[0], -1)
     real = real.reshape(real.shape[0], -1)
     mu1 = np.mean(fake, axis=0)
@@ -42,3 +55,25 @@ def compute_fad(fake, real, eps=1e-6):
         covmean = covmean.real
     fad = diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * np.trace(covmean)
     return fad
+
+
+def main():
+    args = parser.parse_args()
+    cfg = load_config(args.config)
+    train_dir = cfg['train_dir']
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print("Loading dataset...")
+    train_dataset = FPaintDataset(cfg=cfg, path=train_dir, train=True)
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=16, shuffle=True,
+        num_workers=8, pin_memory=True, drop_last=True)
+
+    # Load model
+    model = Generator()
+    model = model.to(device)
+    checkpoint = torch.load(f'args.ckp', map_location=device)
+    model.load_state_dict(checkpoint['gen_state_dict'])
+
+    # Evaluate
+    fad = eval_fad(cfg['gen'], model, train_loader, device)
+    print(f"FAD: {fad}")
