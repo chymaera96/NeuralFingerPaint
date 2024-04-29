@@ -70,10 +70,10 @@ def sqrtm(matrix):
 def main():
     args = parser.parse_args()
     cfg = load_config(args.config)
-    train_dir = cfg['train_dir']
+    val_dir = cfg['val_dir']
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print("Loading dataset...")
-    val_dataset = FPaintDataset(cfg=cfg, path=valid_dir, train=True)
+    val_dataset = FPaintDataset(cfg=cfg, path=val_dir, train=True)
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=2, shuffle=True,
         num_workers=8, pin_memory=True, drop_last=True)
