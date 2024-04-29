@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import argparse
 from scipy import linalg
+import torcheval.metrics.FrechetInceptionDistance as FID
 
 from src.pix2pixGAN import Generator
 from util import load_config, load_ckp
@@ -15,11 +16,15 @@ parser.add_argument('--ckp', default='test', type=str,
                     help='path to checkpoint')
 parser.add_argument('--density', default=None, type=float,    
                     help='Density of the mask')
+parser.add_argument('--metric', default='FID', type=str,
+                    help='Metric to evaluate: FID or FAD')
 
-def eval_fad(cfg, model, data, device):
+
+def eval_fd(cfg, model, data, device, measure='FID'):
     model.eval()
     fad = 0
     n = 0
+    fid = FID(device=device)  # Initialize FID calculator
     for idx, (input, target) in enumerate(data):
         if idx % 10 == 0:
             print(f"Step[{idx}/{len(data)}]")
@@ -28,11 +33,18 @@ def eval_fad(cfg, model, data, device):
         with torch.no_grad():
             noise = torch.randn(input.size(), device=device)
             fake_spec = model(torch.cat([input, noise], dim=1))
-        fad += compute_fad(fake_spec, target)
-        n += 1
-    fad /= n
+            if measure == 'FID':
+                fid.update(fake_spec, target)  # Update FID with new samples
+            else:
+                fad += compute_fad(fake_spec, target)
+                n += 1
+    if measure == 'FID':
+        fad = fid.compute()  # Compute FID
+    else:
+        fad /= n
 
     return fad
+
 
 def compute_fad(fake, real, eps=1e-6):
     fake = fake.view(fake.shape[0], -1)
@@ -85,7 +97,7 @@ def main():
     model.load_state_dict(checkpoint['gen_state_dict'])
 
     # Evaluate
-    fad = eval_fad(cfg, model, val_loader, device)
+    fad = eval_fd(cfg, model, val_loader, device, measure=args.metric)
     print(f"FAD: {fad}")
 
 
