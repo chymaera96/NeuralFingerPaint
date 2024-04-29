@@ -56,8 +56,8 @@ def generate_audio(cfg, model, audio, device='cuda'):
         output = output.squeeze(0).squeeze(0).cpu().numpy()
         output = output[:252, :]
         output = output * (spec_max - spec_min) + spec_min
-        output = librosa.db_to_amplitude(output)
-        output_audio = librosa.griffinlim_cqt(output, sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
+        fake_spec = librosa.db_to_amplitude(output)
+        output_audio = librosa.griffinlim_cqt(fake_spec, sr=cfg['fs'], hop_length=cfg['hop_len'], bins_per_octave=36)
 
     real_spec = librosa.amplitude_to_db(spec, ref=np.max)[:252, :]
 
